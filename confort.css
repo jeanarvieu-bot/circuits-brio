@@ -1,0 +1,74 @@
+/* Confort iPhone et PC pour Circuits Brio */
+html,body{overscroll-behavior:none}
+#app{height:100dvh}
+
+/* ---------- iPhone / petits écrans (portrait) ---------- */
+@media (max-width:600px){
+  #top{flex-wrap:nowrap;overflow-x:auto;gap:6px;padding-top:6px;padding-bottom:6px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  #top::-webkit-scrollbar{display:none}
+  #top>*{flex:none}
+  .brand{margin-right:0}
+  .brand{font-size:0;gap:0}
+  .field{flex:none}
+  #csel{max-width:110px;font-size:16px}
+  #cname{width:120px;font-size:16px}
+  #cnew,#cgen,#cmont,#cfile,#undo{font-size:0;gap:0;padding:0;width:42px}
+  #cdel{padding:0 10px;font-size:13px}
+  .chips{flex-wrap:nowrap}
+  #main{grid-template-rows:minmax(0,1fr) 40%}
+  .grid{grid-template-columns:repeat(auto-fill,minmax(98px,1fr));gap:8px}
+  .tile{min-height:108px;padding:6px}
+  #list{padding:4px 12px 12px}
+  .seg{padding:8px 12px 4px}.tabs{padding:4px 12px 6px}
+  #note{display:none}
+  #bar{bottom:8px;padding:6px 10px;font-size:13px;max-width:calc(100% - 16px)}
+  #bar .msg small{font-size:11px}
+  #toast{top:58px;font-size:13px}
+  #zoom{top:8px;gap:4px}
+  #zoom .btn{min-height:44px;min-width:44px}
+  #seltools{top:8px}
+  .btn,.seg button,.tabs button{min-height:44px}
+  input,select,textarea,#newdecor,#f-text{font-size:16px}
+  .gbox{padding:16px}
+  .gact{flex-wrap:wrap}
+}
+
+/* ---------- iPhone en paysage : liste à gauche, plan à droite ---------- */
+@media (max-height:520px) and (orientation:landscape){
+  #main{grid-template-columns:230px 1fr;grid-template-rows:minmax(0,1fr)}
+  #side{order:0;border-top:0;border-right:1px solid var(--line)}
+  #stage{order:0}
+  #top{flex-wrap:nowrap;overflow-x:auto;gap:6px;padding-top:4px;padding-bottom:4px;scrollbar-width:none}
+  #top::-webkit-scrollbar{display:none}
+  #top>*{flex:none}
+  .brand{font-size:0;gap:0}
+  #cnew,#cgen,#cmont,#cfile,#undo{font-size:0;gap:0;padding:0;width:42px}
+  .btn{min-height:38px}
+  .grid{grid-template-columns:repeat(auto-fill,minmax(96px,1fr))}
+  .tile{min-height:104px}
+  #note{display:none}
+  #bar{bottom:6px}
+  #zoom{flex-direction:row;top:8px}
+  input,select,textarea{font-size:16px}
+}
+
+/* ---------- PC : souris, grand écran ---------- */
+@media (hover:hover) and (pointer:fine){
+  .piece,.decor{cursor:pointer}
+  .decor{cursor:grab}
+  #stage.panning,#stage.panning *{cursor:grabbing!important}
+  #svg{cursor:default}
+  .tile{cursor:grab}
+  .btn[title]:hover{border-color:var(--ink)}
+  #help{display:inline-flex}
+}
+@media (min-width:1500px){
+  #main{grid-template-columns:minmax(340px,400px) 1fr}
+  .grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+}
+#help{display:none;font-weight:800}
+.kbd{display:inline-block;min-width:20px;padding:1px 6px;border:1px solid var(--line);border-bottom-width:2px;border-radius:6px;background:var(--panel2);font:700 12px ui-monospace,Menlo,Consolas,monospace;text-align:center}
+#keys .gbox{width:min(460px,100%)}
+#keys table{width:100%;border-collapse:collapse;font-size:14px}
+#keys td{padding:6px 4px;border-bottom:1px solid var(--line)}
+#keys td:first-child{white-space:nowrap;width:44%}
