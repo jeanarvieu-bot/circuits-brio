@@ -105,3 +105,35 @@
     }
   }, true);
 })();
+
+/* ---------- Générateur : jusqu'à 4 ponts, en utilisant les ponts de l'inventaire (y compris plusieurs du même type) ---------- */
+(function () {
+  'use strict';
+  const patch = (name, pairs) => {
+    try {
+      let src = window[name].toString();
+      for (const [a, b] of pairs) { if (!src.includes(a)) return; src = src.replace(a, () => b); }
+      window[name] = (0, eval)('(' + src + ')');
+    } catch (e) { }
+  };
+  patch('tryGenerate', [
+    ["const types = shuffle(Object.keys(BRIDGE_U).filter(t => A(t) > 0)).slice(0, nb);",
+     "const pool = []; Object.keys(BRIDGE_U).forEach(t => { for (let k = 0; k < A(t); k++) pool.push(t); }); const types = shuffle(pool).slice(0, nb);"],
+    ["if (nb > 1) { if (left.droit_court < 1) return null; left.droit_court--; }",
+     "if (nb > 1) { if (left.droit_court < nb - 1) return null; left.droit_court -= nb - 1; }"],
+    ["const j = rnd(m), extra = 2 * rnd(6); r[j] = u + extra;",
+     "const j = rnd(m), extra = nb >= 3 ? [0, 0, 6, 8][rnd(4)] : 2 * rnd(6); r[j] = u + extra; if (nb >= 3) for (let i = 0; i < m; i++) if (i !== j) r[i] = 0;"],
+    ["runs.forEach(q => { if (q.i === j) q.units = q.free = r[j]; });",
+     "runs.forEach(q => { if (q.i === j || nb >= 3) q.units = q.free = r[q.i]; });"]
+  ]);
+  patch('runGen', [["r.bridges ? ' · pont' : ''", "r.bridges ? ' · ' + r.bridges + (r.bridges > 1 ? ' ponts' : ' pont') : ''"]]);
+  const via = document.querySelector('#g-via');
+  if (via && typeof bindSeg === 'function') {
+    [['3', 'Trois ponts'], ['4', 'Quatre ponts']].forEach(([v, t]) => {
+      const b = document.createElement('button'); b.dataset.v = v; b.textContent = t; via.appendChild(b);
+    });
+    bindSeg('#g-via', 'viaduc', true);
+    const h = document.querySelector('#g-hint');
+    if (h) h.textContent = 'Les ponts se suivent entre deux rampes (rail femelle-femelle et mâle-mâle ajoutés) ; il faut autant de rails droits courts que de ponts moins un. Le nombre de ponts possible dépend de votre inventaire. Une liaison relie le haut et le bas de l’ovale avec 2 aiguillages et crée une boucle de plus ; elle remplace le pont.';
+  }
+})();
