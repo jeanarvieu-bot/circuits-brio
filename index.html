@@ -1,0 +1,1201 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Circuits Brio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Nunito+Sans:wght@500;700;800&display=swap">
+<style>
+/* Disposition : tapis de jeu plein écran, tiroir de pièces à gauche (bas sur écran étroit) */
+:root{
+  --font-display:'Fredoka','Trebuchet MS',system-ui,sans-serif; --font-body:'Nunito Sans',system-ui,-apple-system,sans-serif;
+  --mat:#dde6e8; --mat-dot:#c3d0d4; --panel:#fbfcfc; --panel2:#eef3f4; --ink:#1c2a32; --muted:#5a6b75; --line:#cdd8dc;
+  --accent:#d4372c; --accent-ink:#fff; --ok:#2b8a4b; --warn:#b86e00; --bad:#c0392b;
+  --wood:#e0bb83; --wood-edge:#9f7240; --groove:#8a5f30; --deck:#4c86c2; --deck2:#e7b53c; --water:#bfdcee; --pillar:#8c9aa3;
+  --hill0:#7fb06f; --hill1:#6aa05c; --hill2:#578c4b; --brick:#c9604a; --roof:#b4452f; --roof-blue:#34619a; --shadow:rgba(20,40,50,.28); --rock:#7b8790; --rock-edge:#4a555d; --blue:#2c4a8c; --tube:#c9b6d6; --tube-edge:#7d6a90; --green:#2f7d4a; --green-edge:#1f5a35;
+  --r:14px;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --mat:#16222a; --mat-dot:#22323c; --panel:#1c2831; --panel2:#233440; --ink:#e7eef1; --muted:#97a9b4; --line:#2e3f4b;
+  --accent:#ef5b50; --accent-ink:#1b0a08; --ok:#58c47c; --warn:#e9a23b; --bad:#f06a5c;
+  --wood:#cfa66d; --wood-edge:#7a5630; --groove:#5d4122; --deck:#4f86c0; --deck2:#d9a82f; --water:#2a4a60; --pillar:#74838c;
+  --hill0:#4f7d45; --hill1:#41703a; --hill2:#356030; --brick:#b0523f; --roof:#9d3c29; --roof-blue:#4a77b3; --shadow:rgba(0,0,0,.5); --rock:#5c6872; --rock-edge:#2c363d; --blue:#4a6fc0; --tube:#8a7aa0; --tube-edge:#b8a8cc; --green:#3d9a5d; --green-edge:#2a7040; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --mat:#16222a; --mat-dot:#22323c; --panel:#1c2831; --panel2:#233440; --ink:#e7eef1; --muted:#97a9b4; --line:#2e3f4b;
+  --accent:#ef5b50; --accent-ink:#1b0a08; --ok:#58c47c; --warn:#e9a23b; --bad:#f06a5c;
+  --wood:#cfa66d; --wood-edge:#7a5630; --groove:#5d4122; --deck:#4f86c0; --deck2:#d9a82f; --water:#2a4a60; --pillar:#74838c;
+  --hill0:#4f7d45; --hill1:#41703a; --hill2:#356030; --brick:#b0523f; --roof:#9d3c29; --roof-blue:#4a77b3; --shadow:rgba(0,0,0,.5); --rock:#5c6872; --rock-edge:#2c363d; --blue:#4a6fc0; --tube:#8a7aa0; --tube-edge:#b8a8cc; --green:#3d9a5d; --green-edge:#2a7040; color-scheme:dark}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--mat);color:var(--ink);font:15px/1.4 var(--font-body);padding-left:max(0px,env(safe-area-inset-left,0px));padding-right:max(0px,env(safe-area-inset-right,0px));overflow:hidden;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+button,select,input{font:inherit;color:inherit}
+#app{height:100%;display:grid;grid-template-rows:auto 1fr;min-height:0}
+/* barre du haut */
+#top{display:flex;align-items:center;gap:10px;padding:8px max(16px,env(safe-area-inset-right,0px)) 8px max(16px,env(safe-area-inset-left,0px));background:var(--panel);border-bottom:1px solid var(--line);flex-wrap:wrap;min-width:0}
+.brand{font:600 21px/1 var(--font-display);letter-spacing:.2px;display:flex;align-items:center;gap:8px;margin-right:6px}
+.brand i{width:22px;height:22px;border-radius:6px;background:var(--accent);display:inline-block;position:relative}
+.brand i:after{content:"";position:absolute;left:4px;right:4px;top:9px;height:4px;background:var(--accent-ink);border-radius:2px;opacity:.9}
+.field{display:flex;align-items:center;gap:6px;min-width:0}
+#cname{width:190px;max-width:42vw;border:1px solid var(--line);background:var(--panel2);border-radius:10px;padding:7px 10px;font-weight:700}
+#csel{max-width:150px;border:1px solid var(--line);background:var(--panel2);border-radius:10px;padding:7px 8px}
+.btn{min-height:40px;min-width:40px;padding:0 13px;border-radius:10px;border:1px solid var(--line);background:var(--panel2);cursor:pointer;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:6px;touch-action:manipulation}
+.btn:hover{border-color:var(--muted)} .btn:active{transform:translateY(1px)}
+.btn.pri{background:var(--accent);color:var(--accent-ink);border-color:transparent}
+.btn.danger{color:var(--bad)} .btn[disabled]{opacity:.4;pointer-events:none}
+.btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.spacer{flex:1}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border-radius:999px;padding:5px 11px;font-weight:700;font-size:13px;background:var(--panel2);border:1px solid var(--line);white-space:nowrap}
+.chip.ok{color:var(--ok);border-color:var(--ok)} .chip.warn{color:var(--warn);border-color:var(--warn)} .chip.bad{color:var(--bad);border-color:var(--bad)}
+/* corps */
+#main{display:grid;grid-template-columns:minmax(290px,340px) 1fr;min-height:0}
+#side{background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0;position:relative}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:10px 16px 6px}
+.seg button{min-height:40px;border-radius:10px;border:1px solid var(--line);background:var(--panel2);font:600 15px var(--font-display);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--panel);border-color:transparent}
+.tabs{display:flex;gap:6px;padding:4px 16px 8px;overflow-x:auto}
+.tabs button{flex:none;min-height:36px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:transparent;cursor:pointer;font-weight:700;color:var(--muted)}
+.tabs button[aria-selected="true"]{color:var(--ink);border-color:var(--ink)}
+#list{flex:1;overflow-y:auto;padding:4px 16px 16px;min-height:0;-webkit-overflow-scrolling:touch}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+.tile{position:relative;display:flex;flex-direction:column;gap:4px;padding:8px;border-radius:12px;border:1px solid var(--line);background:var(--panel2);cursor:pointer;text-align:left;min-height:128px;touch-action:manipulation}
+.tile:active{transform:scale(.98)}
+.tile[disabled]{opacity:.45;pointer-events:none}
+.tile .thumb{height:70px;border-radius:8px;background:var(--mat);display:grid;place-items:center;overflow:hidden}
+.thumb img,.row .thumb img{width:100%;height:100%;object-fit:cover}
+.thumb .ico{width:100%;height:100%}
+.tile b{font:600 15px/1.1 var(--font-display)} .tile small{color:var(--muted);font-size:12px;line-height:1.2}
+.badge{position:absolute;top:6px;right:6px;background:var(--ink);color:var(--panel);border-radius:999px;font-weight:800;font-size:12px;padding:2px 8px}
+.badge.zero{background:var(--bad);color:#fff}
+.hint{color:var(--muted);font-size:13px;padding:2px 2px 10px}
+#pop{position:absolute;left:16px;right:16px;z-index:5;background:var(--panel);border:1px solid var(--ink);border-radius:14px;padding:10px;box-shadow:0 10px 30px var(--shadow);display:none}
+#pop.on{display:block}
+#pop h4{margin:0 0 8px;font:600 15px var(--font-display)}
+#pop .opts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.opt{display:flex;flex-direction:column;gap:2px;align-items:stretch;border:1px solid var(--line);background:var(--panel2);border-radius:10px;padding:6px;cursor:pointer;min-height:84px;text-align:left}
+.opt .thumb{height:52px;background:var(--mat);border-radius:6px;display:grid;place-items:center}
+.opt span{font-size:12px;font-weight:700} .opt em{font-style:normal;font-size:11px;color:var(--bad)}
+.opt[disabled]{opacity:.4;pointer-events:none}
+/* inventaire */
+.row{display:grid;grid-template-columns:62px 1fr auto;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+.row .thumb{width:62px;height:62px;border-radius:10px;background:var(--mat);display:grid;place-items:center;overflow:hidden;position:relative;cursor:pointer}
+.row .thumb .cam{position:absolute;right:3px;bottom:3px;width:22px;height:22px;border-radius:50%;background:var(--ink);color:var(--panel);display:grid;place-items:center}
+.row .thumb .cam svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.2}
+.row b{font:600 15px var(--font-display);display:block} .row small{color:var(--muted);font-size:12px}
+.step{display:flex;align-items:center;gap:2px}
+.step button{width:40px;height:40px;border-radius:10px;border:1px solid var(--line);background:var(--panel2);font-size:20px;font-weight:800;cursor:pointer;touch-action:manipulation}
+.step output{min-width:30px;text-align:center;font-weight:800;font-variant-numeric:tabular-nums;font-size:17px}
+h3.sec{margin:14px 0 2px;font:600 13px var(--font-display);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.addform{display:flex;gap:6px;margin-top:8px}.addform input{flex:1;min-width:0;border:1px solid var(--line);background:var(--panel2);border-radius:10px;padding:8px 10px}
+/* scène */
+#stage{position:relative;min-width:0;min-height:0;overflow:hidden;touch-action:none;
+  background-color:var(--mat);background-image:radial-gradient(var(--mat-dot) 1.4px,transparent 1.6px);background-size:26px 26px}
+#svg{width:100%;height:100%;display:block;touch-action:none}
+.rail-edge{fill:none;stroke:var(--wood-edge);stroke-linecap:butt} .rail-wood{fill:none;stroke:var(--wood);stroke-linecap:butt}
+.rail-groove{fill:none;stroke:var(--groove);stroke-width:5;opacity:.75}
+.piece.high{filter:drop-shadow(0 7px 5px var(--shadow))}
+.piece.sel .rail-edge{stroke:var(--accent)}
+.deck{stroke:var(--wood-edge);stroke-width:2} .deck-simple{fill:var(--deck)} .deck-double{fill:var(--deck)} .deck-bascule{fill:var(--deck2)}
+.deck-rail{fill:none;stroke:#ffffff;stroke-opacity:.55;stroke-width:3} .deck-rail2{fill:none;stroke:var(--deck2);stroke-width:5;opacity:.9}
+.pillar{fill:var(--pillar);stroke:var(--wood-edge);stroke-width:1.5} .hinge{stroke:var(--ink);stroke-width:3;stroke-dasharray:6 5;opacity:.6}
+.water{fill:var(--water)} .chev{fill:none;stroke:#fff;stroke-opacity:.6;stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
+.hill{stroke:var(--hill2);stroke-width:2} .h0{fill:var(--hill0)} .h1{fill:var(--hill1)} .h2{fill:var(--hill2)} .tree{fill:#2f6a33}
+.b-body{fill:#efe6d6;stroke:var(--wood-edge);stroke-width:2} .b-roof{fill:var(--roof);stroke:rgba(0,0,0,.25);stroke-width:2} .b-roof.blue{fill:var(--roof-blue)}
+.b-quai{fill:#c9c3b6} .b-clock{fill:#fff;stroke:#333;stroke-width:3} .b-hand{stroke:#333;stroke-width:3;fill:none;stroke-linecap:round}
+.b-door{fill:#31577f} .b-sign{fill:#fff;stroke:#31577f;stroke-width:2} .b-signtxt{font:700 15px var(--font-body);fill:#31577f;letter-spacing:.1em}
+.t-hole{fill:#1d2428} .t-wall{stroke:var(--hill2);stroke-width:4;opacity:.6} .cap{fill:rgba(0,0,0,.55)} .capt{font:700 15px var(--font-body);fill:#fff}
+.decor{cursor:grab} .selbox{fill:none;stroke:var(--accent);stroke-width:4;stroke-dasharray:10 8}
+.port{fill:var(--panel);stroke:var(--ink);stroke-width:3;cursor:pointer} .port.cur{fill:var(--accent);stroke:var(--panel)}
+.pulse{fill:none;stroke:var(--accent);stroke-width:3;transform-box:fill-box;transform-origin:center;animation:pulse 1.6s ease-out infinite}
+@keyframes pulse{from{transform:scale(.7);opacity:.9}to{transform:scale(1.9);opacity:0}}
+@media (prefers-reduced-motion:reduce){.pulse{animation:none;opacity:.5}}
+.clash{fill:none;stroke:var(--bad);stroke-width:4}
+.link-ok{fill:var(--ok)}
+/* surcouches de la scène */
+.floating{position:absolute;display:flex;gap:6px;z-index:3}
+#zoom{right:max(12px,env(safe-area-inset-right,0px));top:12px;flex-direction:column}
+#zoom .btn{background:var(--panel);box-shadow:0 2px 8px var(--shadow)}
+#bar{left:50%;transform:translateX(-50%);bottom:14px;max-width:calc(100% - 24px);background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:8px 12px;box-shadow:0 6px 20px var(--shadow);align-items:center;flex-wrap:wrap;justify-content:center}
+#bar .lv{font-weight:800;background:var(--ink);color:var(--panel);border-radius:8px;padding:2px 9px;font-size:13px}
+#bar .msg{font-weight:700} #bar .msg small{display:block;color:var(--muted);font-weight:600}
+#seltools{left:50%;transform:translateX(-50%);top:12px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:6px;box-shadow:0 6px 20px var(--shadow)}
+#toast{left:50%;transform:translateX(-50%);top:70px;background:var(--ink);color:var(--panel);border-radius:10px;padding:8px 14px;font-weight:700;display:none;max-width:86%}
+#toast.on{display:block}
+#note{position:absolute;left:12px;top:12px;max-width:min(300px,50%);color:var(--muted);font-size:12px;font-weight:700;z-index:2;pointer-events:none}
+[hidden]{display:none!important}
+@media (max-width:860px){
+  #main{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) 42%}
+  #side{order:2;border-right:0;border-top:1px solid var(--line)} #stage{order:1}
+  #cname{width:130px} .brand{font-size:18px}
+}
+.lnk{background:none;border:0;padding:4px 0;color:var(--accent);font-weight:700;font-size:12px;cursor:pointer;text-decoration:underline}
+
+.relief-rock{fill:none;stroke:var(--rock);stroke-linecap:butt;stroke-linejoin:round}.relief-edge{fill:none;stroke:var(--rock-edge);stroke-linecap:butt;stroke-linejoin:round}
+.rockfill{fill:var(--rock);stroke:var(--rock-edge);stroke-width:4;stroke-linejoin:round}.rockslot{stroke:var(--rock-edge);stroke-width:12;stroke-linecap:round;fill:none}
+
+.rail-blue{fill:none;stroke:var(--blue);stroke-linecap:butt}
+.tube{fill:var(--tube);fill-opacity:.55;stroke:var(--tube-edge);stroke-width:4}.tube-shine{stroke:#fff;stroke-opacity:.45;stroke-width:5;stroke-linecap:round;fill:none}.tube-hole{fill:var(--rock-edge);fill-opacity:.55;stroke:var(--tube-edge);stroke-width:4}
+.st-base{fill:#e3d3b4;stroke:var(--wood-edge);stroke-width:2}.st-plat{fill:#7a4e33;stroke:#fff;stroke-width:2;stroke-opacity:.8}.st-num{font:800 30px var(--font-body);fill:#fff}
+.st-roof{fill:var(--green);stroke:var(--green-edge);stroke-width:3}.st-roofline{stroke:var(--green-edge);stroke-width:3;opacity:.6;fill:none}.st-pillar{fill:#e3c18f;stroke:var(--wood-edge);stroke-width:2}
+.peg{fill:#efe4cf;stroke:var(--wood-edge);stroke-width:2}.sock{fill:var(--groove);fill-opacity:.85}
+.port.pm{fill:var(--ink)}.port.pm.cur{fill:var(--accent)}.clash.gc{stroke-dasharray:8 6}
+.peg{fill:var(--ink);stroke:var(--panel);stroke-width:2;fill-opacity:1}.sock{fill:var(--panel);stroke:var(--ink);stroke-width:2.5;fill-opacity:1}
+
+#gen,.modal{position:fixed;inset:0;z-index:30;background:rgba(20,28,34,.45);display:flex;align-items:center;justify-content:center;padding:16px}
+#gen[hidden],.modal[hidden]{display:none}
+.gbox{background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:18px;padding:20px 22px;width:min(440px,100%);box-shadow:0 20px 50px var(--shadow);max-height:100%;overflow:auto}
+.gbox h2{margin:0 0 4px;font:600 22px var(--font-display)}
+.gsub,.ghint{margin:0 0 12px;color:var(--muted);font-size:14px;line-height:1.4}
+.glabel{font:700 12px var(--font-body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:12px 0 6px}
+.gseg,.gchecks{display:flex;gap:6px;flex-wrap:wrap}
+.gseg button,.gchecks button{flex:1;min-height:42px;padding:0 12px;border-radius:10px;border:1px solid var(--line);background:var(--panel2);color:var(--ink);font-weight:700;cursor:pointer}
+.gseg button[aria-pressed="true"],.gchecks button[aria-pressed="true"]{background:var(--ink);color:var(--panel);border-color:transparent}
+#g-msg{min-height:20px;margin:10px 0 0;font-weight:700;font-size:14px}
+.gact{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
+#toast{z-index:60}
+
+.gbox.wide{width:min(560px,100%)}
+.gact.left{justify-content:flex-start;flex-wrap:wrap;margin-top:8px}
+.gres{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-top:12px}
+.gcard{display:flex;flex-direction:column;gap:6px;align-items:center;padding:8px;border-radius:12px;border:1px solid var(--line);background:var(--panel2);color:var(--ink);cursor:pointer;font-weight:700;font-size:13px}
+.gcard svg{width:100%;height:92px;display:block}
+#f-text{width:100%;box-sizing:border-box;border-radius:10px;border:1px solid var(--line);background:var(--panel2);color:var(--ink);padding:8px;font:12px ui-monospace,Menlo,monospace}
+#f-msg{min-height:18px;margin-top:8px;font-weight:700;font-size:14px}
+#m-body h3{margin:14px 0 6px;font:700 12px var(--font-body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.mtable{width:100%;border-collapse:collapse;font-size:14px}.mtable td{padding:5px 4px;border-bottom:1px solid var(--line)}.mtable td:last-child{text-align:right;font-weight:800}
+.mtable .bad{color:var(--bad)}
+.msteps{margin:0;padding:0;list-style:none;counter-reset:s}
+.msteps li{counter-increment:s;display:flex;gap:10px;align-items:center;padding:7px 4px;border-bottom:1px solid var(--line);cursor:pointer;font-size:14px}
+.msteps li::before{content:counter(s);flex:none;width:26px;height:26px;border-radius:50%;background:var(--ink);color:var(--panel);display:grid;place-items:center;font-weight:800;font-size:12px}
+.msteps li em{color:var(--muted);font-style:normal;font-size:12px;margin-left:auto}
+.tile{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+.ghost{position:fixed;z-index:80;pointer-events:none;width:92px;opacity:.92;transform:translate(-50%,-70%);border-radius:12px;background:var(--panel);border:2px solid var(--accent);box-shadow:0 10px 24px var(--shadow);padding:4px}
+.ghost svg,.ghost img{width:100%;height:auto;display:block}
+
+</style>
+<div id="gen" hidden role="dialog" aria-label="Générer un circuit"><div class="gbox">
+  <h2>Générer un circuit</h2>
+  <p class="gsub">Une boucle fermée, avec vos pièces et les règles de raccord. Chaque essai donne un circuit différent.</p>
+  <div class="glabel">Taille</div>
+  <div class="gseg" id="g-size"><button data-v="petit">Petit</button><button data-v="moyen" aria-pressed="true">Moyen</button><button data-v="grand">Grand</button></div>
+  <div class="glabel">Avec</div>
+  <div class="gchecks"><button data-k="tunnel" aria-pressed="true">Tunnel</button><button data-k="gare" aria-pressed="true">Gare</button><button data-k="commissariat" aria-pressed="false">Commissariat</button><button data-k="max" aria-pressed="false">Tout l’inventaire</button></div>
+  <div class="glabel">Pont</div>
+  <div class="gseg" id="g-via"><button data-v="0">Aucun</button><button data-v="1" aria-pressed="true">Un pont</button><button data-v="2">Deux ponts</button></div>
+  <div class="glabel">Aiguillages</div>
+  <div class="gseg" id="g-aig"><button data-v="0" aria-pressed="true">Aucun</button><button data-v="1">Une liaison</button><button data-v="2">Deux liaisons</button></div>
+  <p class="ghint" id="g-hint">Un pont demande une rampe de chaque côté, le petit rail femelle-femelle et le petit rail mâle-mâle. Une liaison relie le haut et le bas de l’ovale avec 2 aiguillages et crée une boucle de plus ; elle remplace le pont.</p>
+  <div id="g-res" class="gres"></div>
+  <div id="g-msg" aria-live="polite"></div>
+  <div class="gact"><button class="btn" id="g-cancel">Fermer</button><button class="btn pri" id="g-go">Générer</button></div>
+</div></div>
+<div id="file" class="modal" hidden role="dialog" aria-label="Exporter ou importer"><div class="gbox">
+  <h2>Sauvegarde en fichier</h2>
+  <p class="gsub">Gardez vos circuits dans un fichier (.json) pour les transférer entre appareils ou les retrouver sur votre PC.</p>
+  <div class="gact left"><button class="btn" id="f-one">Exporter ce circuit</button><button class="btn" id="f-all">Exporter tout</button></div>
+  <div class="glabel">Importer</div>
+  <div class="gact left"><label class="btn" for="f-file">Choisir un fichier</label><input id="f-file" type="file" accept=".json,application/json" hidden></div>
+  <div class="gchecks"><button id="f-inv" aria-pressed="false">Reprendre aussi l’inventaire et les photos</button></div>
+  <div class="glabel">Texte (repli si l’enregistrement est indisponible)</div>
+  <textarea id="f-text" rows="4" spellcheck="false" placeholder="Le contenu exporté s’affiche ici, ou collez-le ici pour l’importer"></textarea>
+  <div class="gact left"><button class="btn" id="f-copy">Copier</button><button class="btn" id="f-paste">Importer ce texte</button></div>
+  <div id="f-msg" aria-live="polite"></div>
+  <div class="gact"><button class="btn pri" id="f-close">Fermer</button></div>
+</div></div>
+<div id="mont" class="modal" hidden role="dialog" aria-label="Liste de montage"><div class="gbox wide">
+  <h2 id="m-title">Liste de montage</h2>
+  <div id="m-body"></div>
+  <div id="m-msg" class="gsub" aria-live="polite"></div>
+  <div class="gact"><button class="btn" id="m-pdf"><svg viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5"/><path d="M5 20h14"/></svg>PDF : plan et guide</button><button class="btn pri" id="m-close">Fermer</button></div>
+</div></div>
+<div id="app">
+  <header id="top">
+    <div class="brand"><i></i>Circuits Brio</div>
+    <div class="field"><select id="csel" aria-label="Choisir un circuit"></select><input id="cname" aria-label="Nom du circuit" maxlength="40"></div>
+    <button class="btn" id="cnew" title="Nouveau circuit"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Nouveau</button>
+    <button class="btn" id="cgen" title="Générer un circuit automatiquement"><svg viewBox="0 0 24 24"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 16v4M17 18h4"/></svg>Générer</button>
+    <button class="btn" id="cmont" title="Liste de montage"><svg viewBox="0 0 24 24"><path d="M8 6h12M8 12h12M8 18h12"/><path d="M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></svg>Montage</button>
+    <button class="btn" id="cfile" title="Exporter ou importer"><svg viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5"/><path d="M5 20h14"/></svg>Fichier</button>
+    <button class="btn danger" id="cdel">Supprimer</button>
+    <button class="btn" id="undo" title="Annuler la dernière action"><svg viewBox="0 0 24 24"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 010 12h-3"/></svg>Annuler</button>
+    <span class="spacer"></span>
+    <div class="chips" id="chips"></div>
+  </header>
+  <div id="main">
+    <aside id="side">
+      <div class="seg"><button id="mode-poser" aria-pressed="true">Poser</button><button id="mode-inv" aria-pressed="false">Inventaire</button></div>
+      <div class="tabs" id="tabs" role="tablist"></div>
+      <div id="list"></div>
+      <div id="pop" role="dialog" aria-label="Choisir la position"></div>
+    </aside>
+    <section id="stage">
+      <svg id="svg" xmlns="http://www.w3.org/2000/svg" aria-label="Plan du circuit">
+        <defs><linearGradient id="rampGrad" x1="0" x2="1" y1="0" y2="0"><stop offset="0" stop-color="#000" stop-opacity=".26"/><stop offset="1" stop-color="#fff" stop-opacity=".34"/></linearGradient></defs>
+        <g id="world"><g id="layer"></g></g>
+      </svg>
+      <div id="note" aria-live="polite"></div>
+      <div class="floating" id="seltools" hidden></div>
+      <div class="floating" id="zoom">
+        <button class="btn" id="zin" aria-label="Zoom avant"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+        <button class="btn" id="zout" aria-label="Zoom arrière"><svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg></button>
+        <button class="btn" id="zfit" aria-label="Tout voir"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+      </div>
+      <div class="floating" id="bar" aria-live="polite"></div>
+      <div class="floating" id="toast" role="status"></div>
+    </section>
+  </div>
+  <input type="file" id="pfile" accept="image/*" hidden>
+</div>
+<script>
+/* ===== ENGINE : géométrie des rails (mm, y vers le bas, angles en degrés, 0 = droite, + = sens horaire) ===== */
+const R = 202;                       // rayon de l'axe d'une courbe (182 intérieur + 20)
+const S45 = R * Math.sin(Math.PI / 4), D45 = R * (1 - Math.cos(Math.PI / 4));
+const R2 = 110, S2 = R2 * Math.sin(Math.PI / 4), D2 = R2 * (1 - Math.cos(Math.PI / 4));   // courbe courte
+const TRACK_W = 40, MAX_LEVEL = 1;
+const rad = d => d * Math.PI / 180;
+const norm = a => ((a % 360) + 360) % 360;
+const P = (x, y, h, dl) => ({ x, y, h, dl });
+const straight = L => () => [P(0, 0, 180, 0), P(L, 0, 0, 0)];
+
+const OPP = g => g === 'M' ? 'F' : g === 'F' ? 'M' : undefined;
+const SW_VARIANTS = [
+  { k: 'G', m: -1, e: 0, label: 'Par le bout simple, branche à gauche' }, { k: 'D', m: 1, e: 0, label: 'Par le bout simple, branche à droite' },
+  { k: 'Gi', m: -1, e: 1, label: 'Par la voie droite, branche à gauche' }, { k: 'Di', m: 1, e: 1, label: 'Par la voie droite, branche à droite' },
+  { k: 'Gc', m: -1, e: 2, label: 'Par la branche courbe, à gauche' }, { k: 'Dc', m: 1, e: 2, label: 'Par la branche courbe, à droite' }];
+const swDef = (name, dim, gen) => ({ cat: 'rails', name, dim, sw: true, len: S45, gen, variants: SW_VARIANTS,
+  ports: m => [P(0, 0, 180, 0), P(S45, 0, 0, 0), P(S45, m * D45, m * 45, 0)] });
+const TRACKS = {
+  droit_long:   { cat: 'rails', name: 'Droit long',   dim: '21,6 cm', len: 216, ports: straight(216) },
+  droit_moyen:  { cat: 'rails', name: 'Droit moyen',  dim: '14,4 cm', len: 144, ports: straight(144) },
+  droit_court:  { cat: 'rails', name: 'Droit court',  dim: '10,8 cm', len: 108, ports: straight(108) },
+  droit_mini:   { cat: 'rails', name: 'Droit mini',   dim: 'mâle-femelle, 5,4 cm',  len: 54,  ports: straight(54) },
+  droit_mini_mm: { cat: 'rails', name: 'Droit mini',  dim: 'mâle-mâle, 5,4 cm',     len: 54,  ports: straight(54), gen: ['M', 'M'] },
+  droit_mini_ff: { cat: 'rails', name: 'Droit mini',  dim: 'femelle-femelle, 5,4 cm', len: 54, ports: straight(54), gen: ['F', 'F'] },
+  courbe:       { cat: 'rails', name: 'Courbe longue', dim: '45°, grand rayon', arc: true, ports: m => [P(0, 0, 180, 0), P(S45, m * D45, m * 45, 0)],
+                  variants: [{ k: 'G', m: -1, e: 0, label: 'Gauche' }, { k: 'D', m: 1, e: 0, label: 'Droite' }] },
+  courbe_courte: { cat: 'rails', name: 'Courbe courte', dim: '45°, petit rayon', arc: true, r: R2, ports: m => [P(0, 0, 180, 0), P(S2, m * D2, m * 45, 0)],
+                  variants: [{ k: 'G', m: -1, e: 0, label: 'Gauche' }, { k: 'D', m: 1, e: 0, label: 'Droite' }] },
+  aiguillage_lev_m: swDef('Aiguillage à levier',  'entrée mâle',   ['M', 'F', 'F']),
+  aiguillage_lev_f: swDef('Aiguillage à levier',  'entrée femelle', ['F', 'M', 'M']),
+  aiguillage_m:     swDef('Aiguillage sans levier', 'entrée mâle',   ['M', 'F', 'F']),
+  aiguillage_f:     swDef('Aiguillage sans levier', 'entrée femelle', ['F', 'M', 'M']),
+  rampe:        { cat: 'ponts', name: 'Rampe de pont', dim: '21,6 cm', len: 216, ramp: true, gen: ['F', 'M'], ports: () => [P(0, 0, 180, 0), P(216, 0, 0, 1)],
+                  variants: [{ k: 'up', m: 1, e: 0, label: 'Monter' }, { k: 'down', m: 1, e: 1, label: 'Descendre' }] },
+  pont:         { cat: 'ponts', name: 'Pont',         dim: '≈ 14 cm', len: 144, need: 1, bridge: 'simple', ports: straight(144) },
+  double_pont:  { cat: 'ponts', name: 'Double pont',  dim: '≈ 33 cm', len: 324, need: 1, bridge: 'double', ports: straight(324) },
+  gare:         { cat: 'decors', name: 'Gare',         dim: 'rail inclus, 14,4 cm', len: 144, need: 0, station: true, ports: straight(144) },
+  commissariat: { cat: 'decors', name: 'Commissariat', dim: 'rail inclus, 14,4 cm', len: 144, need: 0, police: true, ports: straight(144) },
+  tunnel:       { cat: 'decors', name: 'Tunnel',       dim: 'rail inclus, 21,6 cm', len: 216, tunnel: true, ports: straight(216) },
+  pont_bascule: { cat: 'ponts', name: 'Pont bascule', dim: '≈ 21 cm', len: 216, need: 1, bridge: 'bascule', ports: straight(216) },
+};
+const DECORS = {
+  relief:       { cat: 'relief', name: 'Relief',       dim: 'porte 1 rail', w: 190, h: 150 },
+};
+const DEFAULT_INV = { droit_long: 4, droit_moyen: 4, droit_court: 5, droit_mini: 1, droit_mini_mm: 1, droit_mini_ff: 1, courbe: 14, courbe_courte: 2, aiguillage_lev_m: 1, aiguillage_lev_f: 1, aiguillage_m: 1, aiguillage_f: 1, _v: 3,
+  rampe: 6, pont: 1, double_pont: 1, pont_bascule: 1, relief: 5, gare: 1, commissariat: 1, tunnel: 1 };
+
+const variantsOf = t => TRACKS[t].variants || [{ k: '', m: 1, e: 0, label: '' }];
+const variantByKey = (t, k) => variantsOf(t).find(v => v.k === k) || variantsOf(t)[0];
+
+function rot(x, y, deg) { const c = Math.cos(rad(deg)), s = Math.sin(rad(deg)); return [x * c - y * s, x * s + y * c]; }
+
+/* Pose d'une pièce : le port d'entrée e se pose sur le curseur c = {x,y,h,lvl}, h = cap de sortie du curseur */
+function placePiece(t, vk, c, id) {
+  const def = TRACKS[t], v = variantByKey(t, vk), lp = def.ports(v.m), pe = lp[v.e];
+  const phi = norm(c.h + 180 - pe.h), [rx, ry] = rot(pe.x, pe.y, phi);
+  return { id, t, vk: v.k, x: c.x - rx, y: c.y - ry, rot: phi, l0: c.lvl - pe.dl, e: v.e };
+}
+function worldPorts(p) {
+  const v = variantByKey(p.t, p.vk), lp = TRACKS[p.t].ports(v.m);
+  return lp.map((q, i) => { const [rx, ry] = rot(q.x, q.y, p.rot); return { pid: p.id, i, x: p.x + rx, y: p.y + ry, h: norm(q.h + p.rot), lvl: p.l0 + q.dl }; });
+}
+const portsMatch = (a, b) => Math.hypot(a.x - b.x, a.y - b.y) < 5 && Math.abs(norm(a.h - b.h) - 180) < 2 && a.lvl === b.lvl;
+
+/* Genres : tenon (M) ou encoche (F). Les pièces à genres fixes imposent leurs extrémités ; les autres rails ont un bout mâle
+   et un bout femelle, orientables librement. On cherche une affectation où chaque raccord relie un tenon à une encoche. */
+function solveGenders(pieces, links) {
+  const key = (pid, i) => pid + ':' + i, adj = new Map(), color = new Map(), preset = [], conflicts = [], seen = new Set();
+  const edge = (a, b, info) => { (adj.get(a) || adj.set(a, []).get(a)).push({ to: b, info }); (adj.get(b) || adj.set(b, []).get(b)).push({ to: a, info }); };
+  pieces.forEach(p => { const def = TRACKS[p.t];
+    if (def.gen) def.gen.forEach((g, i) => { color.set(key(p.id, i), g); preset.push(key(p.id, i)); }); else edge(key(p.id, 0), key(p.id, 1), { piece: p }); });
+  links.forEach(([a, b]) => edge(key(a.pid, a.i), key(b.pid, b.i), { link: [a, b] }));
+  const run = starts => { const q = starts.slice();
+    while (q.length) { const n = q.shift(), c = color.get(n);
+      for (const { to, info } of adj.get(n) || []) { const want = OPP(c), cur = color.get(to);
+        if (cur === undefined) { color.set(to, want); q.push(to); }
+        else if (cur !== want) { const kk = [n, to].sort().join('|'); if (seen.has(kk)) continue; seen.add(kk);
+          conflicts.push(info.link ? { x: (info.link[0].x + info.link[1].x) / 2, y: (info.link[0].y + info.link[1].y) / 2, a: info.link[0].pid, b: info.link[1].pid }
+                                   : { x: info.piece.x, y: info.piece.y, a: info.piece.id, b: info.piece.id }); } } } };
+  run(preset);
+  pieces.forEach(p => { const k = key(p.id, 0); if (!color.has(k)) { color.set(k, 'F'); run([k]); } });
+  return { color, conflicts };
+}
+function analyse(pieces) {
+  const all = pieces.flatMap(worldPorts), matched = new Set(), links = [];
+  for (let i = 0; i < all.length; i++) for (let j = i + 1; j < all.length; j++) {
+    const a = all[i], b = all[j];
+    if (a.pid !== b.pid && portsMatch(a, b)) { matched.add(i); matched.add(j); links.push([a, b]); }
+  }
+  const { color, conflicts } = solveGenders(pieces, links);
+  all.forEach(a => { a.g = color.get(a.pid + ':' + a.i); });
+  const free = all.filter((_, i) => !matched.has(i));
+  return { all, free, links, gclash: conflicts, closed: pieces.length > 0 && free.length === 0 && conflicts.length === 0 };
+}
+/* Refus si l'ajout crée un raccord tenon/tenon ou encoche/encoche */
+function genderErr(pieces, t, vk, c) {
+  const cand = placePiece(t, vk, c, '__cand');
+  if (TRACKS[t].bridge) {
+    const byId = new Map(pieces.map(p => [p.id, p]));
+    for (const [a, b] of analyse([...pieces, cand]).links) {
+      const o = a.pid === '__cand' ? b.pid : b.pid === '__cand' ? a.pid : null, op = o && byId.get(o);
+      if (op && TRACKS[op.t].bridge) return 'un pont ne se raccorde pas à un autre pont (il faut une rampe, un rail ou un adaptateur)';
+    }
+  }
+  return analyse([...pieces, cand]).gclash.length > analyse(pieces).gclash.length
+    ? 'raccord impossible (tenon contre tenon ou encoche contre encoche). Il faut peut-être un adaptateur mâle-mâle ou femelle-femelle' : null;
+}
+
+/* Un nouveau morceau est-il posable ? Renvoie un texte d'erreur ou null */
+function canPlace(t, vk, c) {
+  const def = TRACKS[t], v = variantByKey(t, vk), lp = def.ports(v.m), pe = lp[v.e];
+  if (def.need !== undefined && c.lvl !== def.need) return def.need === 0 ? 'à poser au sol' : 'à poser en haut d’une rampe';
+  for (const q of lp) { const l = c.lvl - pe.dl + q.dl; if (l < 0) return 'déjà au sol'; if (l > MAX_LEVEL) return 'déjà en hauteur'; }
+  return null;
+}
+
+/* Points d'échantillonnage de l'axe (pour les chevauchements) */
+function samples(p, step = 18) {
+  const def = TRACKS[p.t], v = variantByKey(p.t, p.vk), out = [];
+  const push = (x, y, dl) => { const [rx, ry] = rot(x, y, p.rot); out.push({ x: p.x + rx, y: p.y + ry, l: p.l0 + dl }); };
+  if (def.arc || def.sw) {
+    const rr = def.r || R, n = Math.max(2, Math.ceil(rr * rad(45) / step));
+    for (let k = 0; k <= n; k++) { const a = rad(45) * k / n; push(rr * Math.sin(a), v.m * (rr - rr * Math.cos(a)), 0); }
+    if (def.sw) for (let s = 0; s <= S45; s += step) push(s, 0, 0);
+  } else {
+    const L = def.len, n = Math.max(1, Math.ceil(L / step));
+    for (let k = 0; k <= n; k++) push(L * k / n, 0, def.ramp ? k / n : 0);
+  }
+  return out;
+}
+function collisions(pieces, an) {
+  const smp = pieces.map(p => samples(p)), found = [];
+  const shared = (a, b) => an.links.filter(([u, w]) => (u.pid === a && w.pid === b) || (u.pid === b && w.pid === a)).map(([u]) => u);
+  for (let i = 0; i < pieces.length; i++) for (let j = i + 1; j < pieces.length; j++) {
+    const sh = shared(pieces[i].id, pieces[j].id); let hit = null;
+    outer: for (const a of smp[i]) for (const b of smp[j]) {
+      if (Math.hypot(a.x - b.x, a.y - b.y) < 34 && Math.abs(a.l - b.l) < 0.75) {
+        if (sh.some(s => Math.hypot(s.x - a.x, s.y - a.y) < 60 || Math.hypot(s.x - b.x, s.y - b.y) < 60)) continue;
+        hit = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2, a: pieces[i].id, b: pieces[j].id }; break outer;
+      }
+    }
+    if (hit) found.push(hit);
+  }
+  return found;
+}
+
+/* Écart entre le curseur et l'extrémité libre la plus proche (assistant de fermeture) */
+function nearestGap(c, free) {
+  let best = null;
+  for (const f of free) {
+    if (f.pid === c.pid && f.i === c.i) continue;
+    const d = Math.hypot(f.x - c.x, f.y - c.y);
+    if (!best || d < best.d) best = { d, ang: ((f.h + 180 - c.h + 540) % 360) - 180, dl: f.lvl - c.lvl, to: f };
+  }
+  return best;
+}
+
+function bounds(pieces, decors) {
+  let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
+  const add = (x, y, r = 30) => { x0 = Math.min(x0, x - r); y0 = Math.min(y0, y - r); x1 = Math.max(x1, x + r); y1 = Math.max(y1, y + r); };
+  pieces.forEach(p => samples(p, 40).forEach(s => add(s.x, s.y)));
+  decors.forEach(d => add(d.x, d.y, 90));
+  if (x0 > x1) return { x0: -400, y0: -300, x1: 400, y1: 300 };
+  return { x0, y0, x1, y1 };
+}
+const isElevatedRail = p => { const d = TRACKS[p.t]; return !d.ramp && !d.bridge && Math.round(p.l0) >= 1; };
+const countUsed = (pieces, decors) => { const u = {}; pieces.forEach(p => { u[p.t] = (u[p.t] || 0) + 1; if (isElevatedRail(p)) u.relief = (u.relief || 0) + 1; }); decors.forEach(d => u[d.t] = (u[d.t] || 0) + 1); return u; };
+const uid = () => Math.random().toString(36).slice(2, 9);
+
+/* Boucle d'exemple : ovale de 8 courbes et 2 rails longs */
+function exampleCircuit() {
+  const pieces = []; let c = { x: -216, y: -R, h: 0, lvl: 0 };
+  const seq = ['droit_long', 'courbe', 'courbe', 'courbe', 'courbe', 'tunnel', 'courbe', 'courbe', 'courbe', 'courbe'];
+  seq.forEach(t => {
+    const p = placePiece(t, t === 'courbe' ? 'D' : '', c, 'e' + pieces.length); pieces.push(p);
+    const q = worldPorts(p)[1]; c = { x: q.x, y: q.y, h: q.h, lvl: q.lvl, g: q.g };
+  });
+  return pieces;
+}
+
+/* ===== GÉNÉRATEUR : boucles fermées à symétrie centrale, remplies exactement avec l'inventaire ===== */
+/* Une demi-boucle S (rails + courbes, virage total 180°) suivie de la même demi-boucle tournée de 180° se referme toujours.
+   On tire donc le gabarit (longueurs des alignements, sens des courbes), puis on remplit chaque alignement avec de vraies pièces. */
+const GU = 18;                                   // toutes les longueurs de rails sont des multiples de 18 mm
+const FILL = [['droit_long', 12], ['droit_moyen', 8], ['droit_court', 6], ['droit_mini', 3]];
+const BRIDGE_U = { pont: 8, pont_bascule: 12, double_pont: 18 };
+const rnd = n => Math.floor(Math.random() * n);
+const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = rnd(i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+
+function tileRun(units, left, budget) {
+  if (units === 0) return [];
+  if (units < 0 || budget.n-- <= 0) return null;
+  for (const [t, u] of shuffle(FILL.slice())) {
+    if (u <= units && left[t] > 0) { left[t]--; const r = tileRun(units - u, left, budget); if (r) { r.push(t); return r; } left[t]++; }
+  }
+  return null;
+}
+
+/* o = { size:'petit'|'moyen'|'grand', tunnel, gare, commissariat, viaduc:0|1|2 } ; A(t) = quantité disponible */
+function tryGenerate(o, A) {
+  if (o.aig) return tryTheta(o, A);
+  const size = o.max ? 'grand' : (o.size || 'moyen'), m = size === 'grand' && (o.max ? Math.random() < .8 : Math.random() < .6) ? 6 : 4;
+  if (A('courbe') < 2 * m) return null;
+  const signs = Array(m).fill(1); if (m === 6) signs[rnd(6)] = -1;
+  const H = o.max ? [48, 64] : { petit: [18, 34], moyen: [30, 44], grand: [40, 50] }[size], target = H[0] + 2 * rnd(((H[1] - H[0]) >> 1) + 1);
+  const r = Array(m).fill(0); let sum = 0; while (sum < target) { const a = 2 * (1 + rnd(4)); r[rnd(m)] += a; sum += a; }
+  const left = {}; FILL.forEach(([t]) => left[t] = A(t));
+  const runs = []; for (let p = 0; p < 2; p++) for (let i = 0; i < m; i++) runs.push({ i, p, units: r[i], free: r[i], items: [] });
+  // viaduc : rampe, pont(s), femelle-femelle, rampe. Il impose un mâle-mâle ailleurs sur la boucle (changement de polarité).
+  let macro = null, macroRun = -1, partner = -1;
+  const nb = o.viaduc || 0;
+  if (nb) {
+    const types = shuffle(Object.keys(BRIDGE_U).filter(t => A(t) > 0)).slice(0, nb);
+    if (types.length < nb || A('rampe') < 2 || A('droit_mini_ff') < 1 || A('droit_mini_mm') < 1 || A('relief') < nb) return null;
+    if (nb > 1) { if (left.droit_court < 1) return null; left.droit_court--; }
+    macro = [{ t: 'rampe', vk: 'up' }]; let u = 24 + 3;
+    types.forEach((t, k) => { if (k) macro.push({ t: 'droit_court', vk: '' }), u += 6; macro.push({ t, vk: '' }); u += BRIDGE_U[t]; });
+    macro.push({ t: 'droit_mini_ff', vk: '' }, { t: 'rampe', vk: 'down' });
+    const j = rnd(m), extra = 2 * rnd(6); r[j] = u + extra;
+    runs.forEach(q => { if (q.i === j) q.units = q.free = r[j]; });
+    const mine = runs.filter(q => q.i === j); macroRun = rnd(2); const A1 = mine[macroRun], B1 = mine[1 - macroRun];
+    A1.free -= u; A1.items.push({ macro: true }); B1.free -= 3; B1.items.push({ t: 'droit_mini_mm', vk: '' });
+    if (A1.free < 0 || B1.free < 0) return null;
+  }
+  const specials = []; if (o.tunnel && A('tunnel') > 0) specials.push(['tunnel', 12]); if (o.gare && A('gare') > 0) specials.push(['gare', 8]); if (o.commissariat && A('commissariat') > 0) specials.push(['commissariat', 8]);
+  for (const [t, u] of specials) { const ok = runs.filter(q => q.free >= u); if (!ok.length) return null; const q = ok[rnd(ok.length)]; q.free -= u; q.items.push({ t, vk: '' }); }
+  for (const q of runs.slice().sort((a, b) => b.free - a.free)) { if (q.free % 2) return null; const tl = tileRun(q.free, left, { n: 4000 }); if (!tl) return null; tl.forEach(t => q.items.push({ t, vk: '' })); shuffle(q.items); }
+  // construction
+  const mirror = Math.random() < .5, pieces = []; let c = { x: 0, y: 0, h: 0, lvl: 0 };
+  const put = (t, vk) => { const p = placePiece(t, vk, c, 'g' + pieces.length); pieces.push(p); const q = worldPorts(p)[1 - p.e]; c = { x: q.x, y: q.y, h: q.h, lvl: q.lvl }; };
+  for (let p = 0; p < 2; p++) for (let i = 0; i < m; i++) {
+    runs.find(q => q.i === i && q.p === p).items.forEach(it => it.macro ? macro.forEach(x => put(x.t, x.vk)) : put(it.t, it.vk));
+    put('courbe', (signs[i] > 0) !== mirror ? 'D' : 'G');
+  }
+  const an = analyse(pieces); if (!an.closed || collisions(pieces, an).length) return null;
+  const used = countUsed(pieces, []); for (const t in used) if (used[t] > A(t)) return null;
+  return { pieces, curves: 2 * m, bridges: nb };
+}
+/* Plusieurs propositions différentes ; en mode « tout l'inventaire », les plus fournies d'abord */
+function generateMany(o, A, n) {
+  const out = [], seen = new Set(), tries = o.max ? 500 : 600;
+  for (let k = 0; k < tries && (o.max || out.length < n); k++) {
+    const r = tryGenerate(o, A); if (!r) continue;
+    const sig = r.pieces.map(p => p.t + p.vk).join(','); if (seen.has(sig)) continue; seen.add(sig); out.push(r);
+  }
+  if (!out.length && o.max) return generateMany({ ...o, max: 0, size: 'grand' }, A, n);   // repli : grand circuit classique
+  if (o.max) out.sort((a, b) => b.pieces.length - a.pieces.length);
+  return out.slice(0, n);
+}
+function generateCircuit(o, A) { for (let k = 0; k < 400; k++) { const r = tryGenerate(o, A); if (r) return r; } return null; }
+
+/* ===== Famille « thêta » : un ovale divisé par 1 ou 2 liaisons (2 aiguillages chacune) → 2 ou 3 boucles reliées =====
+   Haut : un aiguillage divergent dont la branche part vers l'intérieur ; bas : un aiguillage convergent juste en dessous.
+   La liaison (courbe, rail droit, courbe) a la longueur exacte de la partie verticale de l'ovale : fermeture exacte. */
+const SW_MODELS = ['aiguillage_lev_m', 'aiguillage_lev_f', 'aiguillage_m', 'aiguillage_f'];
+const pickU = l => l[rnd(l.length)];
+function tryTheta(o, A) {
+  const nd = o.aig === 2 ? 2 : 1, sizeK = { petit: 0, moyen: 1, grand: 2 }[o.size || 'moyen'];
+  const sw = shuffle(SW_MODELS.filter(t => A(t) > 0)); if (sw.length < 2 * nd || A('courbe') < 8 + 2 * nd) return null;
+  const rv = pickU([[6, 8, 12], [8, 12, 14, 16], [12, 14, 16, 18, 20]][sizeK]), rt = pickU([[0, 6], [0, 6, 8, 12], [6, 8, 12, 14, 16]][sizeK]),
+        rt2 = pickU([[6, 8], [8, 12, 14], [12, 14, 16, 18]][sizeK]), rtB = nd === 2 ? pickU([[8, 12], [12, 14, 16], [14, 16, 20]][sizeK]) : 0;
+  const left = {}; FILL.forEach(([t]) => left[t] = A(t));
+  // pièces spéciales (rails avec décor) : tirées pour occuper des alignements de la boucle
+  const slots = [{ n: 'rt', u: rt }, { n: 'rt2', u: rt2 }, { n: 'rtB', u: rtB }, { n: 'rv', u: rv }];
+  const items = []; const sp = []; if (o.tunnel && A('tunnel') > 0) sp.push(['tunnel', 12]); if (o.gare && A('gare') > 0) sp.push(['gare', 8]); if (o.commissariat && A('commissariat') > 0) sp.push(['commissariat', 8]);
+  // les segments : haut/bas x (rt, rt2, rtB), verticaux A (2) et liaisons (nd)
+  const segs = []; const mk = (name, u) => { const q = { name, units: u, free: u, items: [] }; segs.push(q); return q; };
+  const topA = mk('topA', rt), topB = nd === 2 ? mk('topB', rtB) : null, top2 = mk('top2', rt2), botA = mk('botA', rt), botB = nd === 2 ? mk('botB', rtB) : null, bot2 = mk('bot2', rt2);
+  const vE = mk('vE', rv), vW = mk('vW', rv), link = []; for (let k = 0; k < nd; k++) link.push(mk('link' + k, rv));
+  for (const [t, u] of sp) { const ok = segs.filter(q => q.free >= u); if (!ok.length) return null; const q = ok[rnd(ok.length)]; q.free -= u; q.items.push({ t, vk: '' }); }
+  for (const q of segs.slice().sort((a, b) => b.free - a.free)) { const tl = tileRun(q.free, left, { n: 4000 }); if (!tl) return null; tl.forEach(t => q.items.push({ t, vk: '' })); shuffle(q.items); }
+  const flip = Math.random() < .5, dv = flip ? 'G' : 'D', cv = flip ? 'G' : 'D', ci = flip ? 'Di' : 'Gi';
+  const pieces = []; let c = { x: 0, y: 0, h: 0, lvl: 0 };
+  const put = (t, vk, id) => { const p = placePiece(t, vk, c, id || 'g' + pieces.length); pieces.push(p); const q = worldPorts(p)[1 - p.e]; c = { x: q.x, y: q.y, h: q.h, lvl: q.lvl }; return p; };
+  const run = q => q.items.forEach(it => put(it.t, it.vk));
+  const dividers = [];   // aiguillages haut (divergents) dont on part pour tracer les liaisons
+  const topSw = [], botSw = [];
+  // haut, vers l'est : [A, (S3, B), S1, 2]
+  run(topA); for (let k = 0; k < nd; k++) { if (k === 1) run(topB); topSw.push(put(sw[k], dv)); }
+  run(top2);
+  put('courbe', cv); put('courbe', cv); run(vE); put('courbe', cv); put('courbe', cv);
+  // bas, vers l'ouest : [2, S2, (B, S4), A]
+  run(bot2); for (let k = nd - 1; k >= 0; k--) { botSw.push(put(sw[nd + k], ci)); if (k === 1) run(botB); }
+  run(botA);
+  put('courbe', cv); put('courbe', cv); run(vW); put('courbe', cv); put('courbe', cv);
+  // liaisons : depuis la branche de chaque aiguillage du haut
+  for (let k = 0; k < nd; k++) {
+    const q = worldPorts(topSw[k])[2]; c = { x: q.x, y: q.y, h: q.h, lvl: 0 };
+    put('courbe', cv); run(link[k]); put('courbe', cv);
+  }
+  const an = analyse(pieces); if (!an.closed || collisions(pieces, an).length) return null;
+  const used = countUsed(pieces, []); for (const t in used) if (used[t] > A(t)) return null;
+  return { pieces, curves: 8 + 2 * nd, bridges: 0, loops: nd + 1 };
+}
+
+/* ===== RENDER : dessin SVG des rails, ponts et décors ===== */
+const f1 = n => Math.round(n * 10) / 10;
+function arcD(m, o, r0 = R) {          // arc de 45° décalé latéralement de o
+  const r = r0 - m * o, x1 = r * Math.sin(rad(45)), y1 = m * (r0 - r * Math.cos(rad(45)));
+  return `M0 ${o} A${f1(r)} ${f1(r)} 0 0 ${m > 0 ? 1 : 0} ${f1(x1)} ${f1(y1)}`;
+}
+function localPaths(t, m) {     // chemin d'axe + deux rainures
+  const def = TRACKS[t];
+  if (def.arc) { const r0 = def.r || R; return { axis: arcD(m, 0, r0), grooves: [arcD(m, -8, r0), arcD(m, 8, r0)] }; }
+  if (def.sw) { const L = f1(S45); return { axis: `M0 0 L${L} 0 ` + arcD(m, 0), grooves: [`M0 -8 L${L} -8`, `M0 8 L${L} 8`, arcD(m, -8), arcD(m, 8)] }; }
+  return { axis: `M0 0 L${def.len} 0`, grooves: [`M0 -8 L${def.len} -8`, `M0 8 L${def.len} 8`] };
+}
+function trackSVG(p, opts = {}) {
+  const def = TRACKS[p.t], v = variantByKey(p.t, p.vk), { axis, grooves } = localPaths(p.t, v.m);
+  const lvl = Math.max(0, Math.round(p.l0 + (def.ramp ? 0.5 : (def.bridge ? 0 : 0))));
+  const lv = def.bridge ? def.need : (def.ramp ? 'r' : Math.round(p.l0));
+  let g = '';
+  if (def.bridge === 'bascule') g += `<rect x="-6" y="-34" width="${def.len + 12}" height="68" rx="10" class="water"/>`;
+  if (def.station) g += `<rect x="-14" y="-74" width="172" height="124" rx="8" class="st-base"/><rect x="0" y="-66" width="144" height="40" rx="3" class="st-plat"/><text x="12" y="-36" class="st-num">1</text>`;
+  if (!def.ramp && !def.bridge && Math.round(p.l0) >= 1) g += `<path d="${axis}" class="relief-edge" stroke-width="80"/><path d="${axis}" class="relief-rock" stroke-width="72"/>`;
+  g += `<path d="${axis}" class="rail-edge" stroke-width="${TRACK_W + 5}"/><path d="${axis}" class="${def.tunnel ? 'rail-blue' : 'rail-wood'}" stroke-width="${TRACK_W}"/>`;
+  g += grooves.map(d => `<path d="${d}" class="rail-groove"/>`).join('');
+  if (def.ramp) {
+    g += `<rect x="0" y="-20" width="${def.len}" height="40" fill="url(#rampGrad)" pointer-events="none"/>`;
+    for (let k = 1; k < 5; k++) g += `<path d="M${k * def.len / 5 - 6} -14 l8 14 l-8 14" class="chev"/>`;
+  }
+  if (def.bridge) {
+    const w = def.bridge === 'double' ? 78 : 66, L = def.len;
+    g += `<rect x="0" y="${-w / 2}" width="${L}" height="${w}" rx="6" class="deck deck-${def.bridge}"/>`;
+    g += `<path d="M0 ${-w / 2 + 4} H${L} M0 ${w / 2 - 4} H${L}" class="deck-rail"/>`;
+    g += `<path d="${axis}" class="rail-edge" stroke-width="${TRACK_W + 2}" /><path d="${axis}" class="rail-wood" stroke-width="${TRACK_W - 3}"/>`;
+    g += grooves.map(d => `<path d="${d}" class="rail-groove"/>`).join('');
+    if (def.bridge === 'double') g += `<path d="M0 -24 H${L} M0 24 H${L}" class="deck-rail2"/>`;
+    for (const x of [14, L - 14]) g += `<rect x="${x - 9}" y="${-w / 2 - 5}" width="18" height="${w + 10}" rx="4" class="pillar"/>`;
+    if (def.bridge === 'bascule') g += `<path d="M${L / 2} ${-w / 2} V${w / 2}" class="hinge"/>`;
+  }
+  if (def.tunnel) {
+    for (let k = 1; k < 5; k++) g += `<path d="M${k * def.len / 5 - 6} -12 l8 12 l-8 12" class="chev"/>`;
+    g += `<rect x="-6" y="-48" width="${def.len + 12}" height="96" rx="30" class="tube"/><path d="M6 -38 H${def.len - 6}" class="tube-shine"/><circle cx="${def.len * .3}" cy="-22" r="13" class="tube-hole"/><circle cx="${def.len * .72}" cy="-22" r="13" class="tube-hole"/>`;
+  }
+  if (def.station) g += `<rect x="-18" y="-90" width="180" height="58" rx="10" class="st-roof"/><path d="M-6 -62 H150" class="st-roofline"/><circle cx="6" cy="-30" r="6" class="st-pillar"/><circle cx="138" cy="-30" r="6" class="st-pillar"/>`;
+  if (def.police) g += `<rect x="-6" y="-86" width="156" height="66" rx="8" class="b-body"/><rect x="-12" y="-96" width="168" height="30" rx="6" class="b-roof blue"/><rect x="58" y="-52" width="28" height="30" rx="3" class="b-door"/><text x="72" y="-73" text-anchor="middle" style="fill:#fff;font-size:14px" class="b-signtxt">POLICE</text>`;
+  const gg = opts.g || def.gen;
+  if (gg) def.ports(v.m).forEach((q, i) => { const cs = Math.cos(rad(q.h)), sn = Math.sin(rad(q.h));
+    g += gg[i] === 'M' ? `<circle cx="${f1(q.x + cs * 9)}" cy="${f1(q.y + sn * 9)}" r="8" class="peg"/>` : `<circle cx="${f1(q.x - cs * 11)}" cy="${f1(q.y - sn * 11)}" r="8" class="sock"/>`; });
+  const cls = 'piece' + (opts.sel ? ' sel' : '') + (def.ramp || def.bridge || p.l0 > 0 ? ' high' : '');
+  return `<g class="${cls}" data-kind="piece" data-id="${p.id}" transform="translate(${f1(p.x)} ${f1(p.y)}) rotate(${f1(p.rot)})">${g}</g>`;
+}
+
+/* --- décors --- */
+function decorSVG(d, photo, sel) {
+  const def = DECORS[d.t] || { w: d.w || 150, h: d.h || 120 }, w = def.w, h = def.h;
+  let g = '';
+  if (d.t === 'relief') {
+    g = `<path d="M${-w * .42} ${h * .3} L${-w * .5} ${-h * .05} L${-w * .24} ${-h * .36} L${w * .14} ${-h * .4} L${w * .46} ${-h * .1} L${w * .4} ${h * .3} Z" class="rockfill"/>
+         <path d="M${-w * .3} ${-h * .06} H${w * .3}" class="rockslot"/>`;
+  } else if (d.t === 'gare') {
+    g = `<rect x="${-w / 2}" y="${-h / 2}" width="${w}" height="${h}" rx="8" class="b-body"/><rect x="${-w / 2 - 6}" y="${-h / 2 - 8}" width="${w + 12}" height="${h * .55}" rx="6" class="b-roof"/>
+         <rect x="${-w / 2 + 10}" y="${h * .12}" width="${w - 20}" height="${h * .26}" rx="4" class="b-quai"/><circle cx="0" cy="${-h * .26}" r="17" class="b-clock"/><path d="M0 ${-h * .26} v-11 M0 ${-h * .26} l8 5" class="b-hand"/>`;
+  } else if (d.t === 'commissariat') {
+    g = `<rect x="${-w / 2}" y="${-h / 2}" width="${w}" height="${h}" rx="8" class="b-body"/><rect x="${-w / 2 - 6}" y="${-h / 2 - 6}" width="${w + 12}" height="${h * .5}" rx="6" class="b-roof blue"/>
+         <rect x="${-30}" y="${h * .02}" width="60" height="${h * .3}" rx="4" class="b-door"/><rect x="${-w * .3}" y="${-h * .38}" width="${w * .6}" height="22" rx="4" class="b-sign"/><text y="${-h * .38 + 16}" text-anchor="middle" class="b-signtxt">POLICE</text>`;
+  } else if (d.t === 'tunnel') {
+    g = `<rect x="${-w / 2}" y="${-h / 2}" width="${w}" height="${h}" rx="${h / 2.4}" class="hill h0"/><rect x="${-w * .36}" y="${-h * .3}" width="${w * .72}" height="${h * .6}" rx="${h * .3}" class="hill h1"/>
+         <path d="M${-w * .2} ${-h * .14} h${w * .4} v${h * .28} h${-w * .4} z" class="t-hole"/><path d="M${-w / 2} ${-h * .3} v${h * .6} M${w / 2} ${-h * .3} v${h * .6}" class="t-wall"/>`;
+  } else {
+    const id = 'clip' + d.id;
+    g = `<clipPath id="${id}"><rect x="${-w / 2}" y="${-h / 2}" width="${w}" height="${h}" rx="14"/></clipPath>
+         <rect x="${-w / 2}" y="${-h / 2}" width="${w}" height="${h}" rx="14" class="b-body"/>` +
+        (photo ? `<image href="${photo}" x="${-w / 2}" y="${-h / 2}" width="${w}" height="${h}" preserveAspectRatio="xMidYMid slice" clip-path="url(#${id})"/>` : '') +
+        `<rect x="${-w / 2}" y="${h / 2 - 28}" width="${w}" height="28" class="cap" clip-path="url(#${id})"/><text y="${h / 2 - 9}" text-anchor="middle" class="capt">${esc(d.label || '')}</text>`;
+  }
+  const selBox = sel ? `<rect x="${-w / 2 - 10}" y="${-h / 2 - 10}" width="${w + 20}" height="${h + 20}" rx="14" class="selbox"/>` : '';
+  return `<g class="decor" data-kind="decor" data-id="${d.id}" transform="translate(${f1(d.x)} ${f1(d.y)}) rotate(${d.rot || 0})">${selBox}${g}</g>`;
+}
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+/* --- vignettes (icône d'un type de pièce) --- */
+function iconSVG(t, vk) {
+  if (DECORS[t] || String(t).startsWith('c_')) {
+    const def = DECORS[t] || { w: 150, h: 120 };
+    const body = decorSVG({ id: 'i' + t, t, x: 0, y: 0, rot: 0, label: '' }, null, false);
+    const w = def.w + 24, h = def.h + 24; return `<svg class="ico" viewBox="${-w / 2} ${-h / 2} ${w} ${h}" aria-hidden="true">${body}</svg>`;
+  }
+  const def = TRACKS[t], p = placePiece(t, vk || variantsOf(t)[0].k, { x: 0, y: 0, h: 0, lvl: def.need || 0 }, 'ico');
+  const s = samples(p, 20), b = { x0: Math.min(...s.map(a => a.x)) - 36, x1: Math.max(...s.map(a => a.x)) + 36, y0: Math.min(...s.map(a => a.y)) - 36, y1: Math.max(...s.map(a => a.y)) + 36 };
+  const w = Math.max(b.x1 - b.x0, 110), h = Math.max(b.y1 - b.y0, 80), cx = (b.x0 + b.x1) / 2, cy = (b.y0 + b.y1) / 2;
+  return `<svg class="ico" viewBox="${f1(cx - w / 2)} ${f1(cy - h / 2)} ${f1(w)} ${f1(h)}" aria-hidden="true">${trackSVG(p, { g: def.gen || ['F', 'M'] })}</svg>`;
+}
+
+/* ===== APP (1/2) : état, sauvegarde, actions ===== */
+const $ = s => document.querySelector(s);
+const CATS = [['rails', 'Rails'], ['ponts', 'Ponts'], ['decors', 'Relief et décors']];
+const LS_KEY = 'brio-circuits-v1';
+let DROP = null;
+const MYREVS = new Set(); let localT = 0;
+let ST = null, SEL = null, VIEW = { x: 0, y: 0, cx: 0, cy: 0, k: 0.45 }, TAB = 'rails', MODE = 'poser', HIST = [], dirty = false, lastRev = '', dbDoc = null, assetsApi = null, saveT = null, saveNote = '';
+
+function exampleState() {
+  const pieces = exampleCircuit();
+  const decors = [];
+  return { v: 1, inv: { ...DEFAULT_INV }, photos: {}, customs: [], current: 'c1',
+    circuits: [{ id: 'c1', name: 'Ovale d’exemple', pieces, decors, cursor: null, example: true }] };
+}
+const cur = () => ST.circuits.find(c => c.id === ST.current) || ST.circuits[0];
+const allDecorTypes = () => [...Object.keys(DECORS), ...ST.customs.map(c => c.id)];
+const typeName = t => TRACKS[t]?.name || DECORS[t]?.name || ST.customs.find(c => c.id === t)?.name || t;
+const photoSrc = v => !v ? '' : (typeof v === 'string' ? v : '/_blob/' + v.id);
+const invOf = t => ST.inv[t] ?? (ST.customs.find(c => c.id === t)?.count ?? 0);
+const remaining = t => invOf(t) - (countUsed(cur().pieces, cur().decors)[t] || 0);
+
+function snapshot() { const c = cur(); HIST.push(JSON.stringify({ id: c.id, pieces: c.pieces, decors: c.decors, cursor: c.cursor })); if (HIST.length > 60) HIST.shift(); }
+function undo() {
+  const s = HIST.pop(); if (!s) return; const o = JSON.parse(s), c = ST.circuits.find(x => x.id === o.id); if (!c) return;
+  c.pieces = o.pieces; c.decors = o.decors; c.cursor = o.cursor; SEL = null; changed(true);
+}
+function toast(msg, ms) { const t = $('#toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('on'), ms || 2600); }
+
+/* --- sauvegarde : base partagée de la page si disponible, sinon copie locale du navigateur --- */
+function persistable() { return { v: 1, rev: '', inv: ST.inv, photos: ST.photos, customs: ST.customs, current: ST.current, circuits: ST.circuits }; }
+function changed(redraw) {
+  dirty = true; clearTimeout(saveT); saveT = setTimeout(save, 900); if (redraw !== false) render();
+}
+let saving = false;
+async function save() {
+  saving = true;
+  const data = persistable(); data.rev = lastRev = uid() + uid(); MYREVS.add(lastRev); data.t = localT = Date.now();
+  try { localStorage.setItem(LS_KEY, JSON.stringify({ ...data, photos: {} })); } catch (e) { }
+  if (!dbDoc) { dirty = false; saving = false; saveNote = 'Sauvegarde sur cet appareil seulement'; return paintNote(); }
+  try { await dbDoc.set(JSON.parse(JSON.stringify(data))); dirty = false; saveNote = 'Enregistré'; }
+  catch (e) { saveNote = e && e.code === 'quota_exceeded' ? 'Espace plein : retirez des photos' : 'Non enregistré, nouvel essai à la prochaine modification'; }
+  saving = false; paintNote();
+}
+function paintNote() { const n = $('#note'); if (n) n.textContent = saveNote; }
+function adopt(d) {
+  if (!d || !d.circuits || !d.circuits.length) return false;
+  d = JSON.parse(JSON.stringify(d));   // copie profonde : les données de la base partagée peuvent être figées
+  d.circuits.forEach(c => { c.decors = (c.decors || []).filter(x => !['relief', 'gare', 'tunnel', 'commissariat'].includes(x.t)); (c.pieces || []).forEach(p => { if (p.t === 'aiguillage') p.t = 'aiguillage_m'; }); });
+  const inv = { ...DEFAULT_INV, ...(d.inv || {}) };
+  if (!(d.inv && d.inv._v)) { delete inv.aiguillage; inv.droit_mini = Math.max(inv.droit_mini || 0, 1); inv._v = 2; }
+  if ((inv._v || 0) < 3) { Object.assign(inv, { droit_long: 4, droit_moyen: 4, droit_court: 5, courbe: 14, courbe_courte: 2, rampe: 6 }); inv._v = 3; }
+  ST = { v: 1, inv, photos: d.photos || {}, customs: d.customs || [], circuits: d.circuits, current: d.current };
+  if (!ST.circuits.some(c => c.id === ST.current)) ST.current = ST.circuits[0].id; return true;
+}
+
+/* --- pose des pièces --- */
+function cursorInfo() {
+  const c = cur(); if (!c.pieces.length) return { x: DROP ? DROP.x : (VIEW.cx || 0), y: DROP ? DROP.y : (VIEW.cy || 0), h: 0, lvl: 0, first: true };
+  const an = analyse(c.pieces); let port = c.cursor && an.free.find(f => f.pid === c.cursor.pid && f.i === c.cursor.i);
+  if (!port) port = an.free[an.free.length - 1]; if (!port) return null; return { ...port };
+}
+function reliefErr(t, ci) {
+  const def = TRACKS[t]; if (def.ramp || def.bridge || !ci) return null;
+  return Math.round(ci.lvl) >= 1 && remaining('relief') <= 0 ? 'Plus de relief disponible : un relief porte un seul rail.' : null;
+}
+function addTrack(t, vk) {
+  const c = cur(), ci = cursorInfo();
+  if (!ci) return toast('Le circuit est fermé : aucune extrémité libre.');
+  if (remaining(t) <= 0) return toast('Plus de ' + typeName(t).toLowerCase() + ' disponible.');
+  const err = canPlace(t, vk, ci); if (err) return toast(typeName(t) + ' : ' + err + '.');
+  const re = reliefErr(t, ci); if (re) return toast(re);
+  const ge = genderErr(c.pieces, t, vk, ci); if (ge) return toast(typeName(t) + ' : ' + ge + '.');
+  snapshot();
+  const p = placePiece(t, vk, ci, 'p' + uid()); c.pieces.push(p); delete c.example;
+  const an = analyse(c.pieces), mine = an.free.filter(f => f.pid === p.id && f.i !== p.e);
+  const nx = mine[0] || an.free[an.free.length - 1]; c.cursor = nx ? { pid: nx.pid, i: nx.i } : null; SEL = null;
+  changed(); if (an.closed) toast('Boucle fermée.');
+}
+function addDecor(t) {
+  if (remaining(t) <= 0) return toast('Plus de ' + typeName(t).toLowerCase() + ' disponible.');
+  snapshot(); const c = cur(), n = c.decors.length;
+  const d = { id: 'd' + uid(), t, x: Math.round((DROP ? DROP.x : (VIEW.cx || 0) + (n % 4) * 30)), y: Math.round((DROP ? DROP.y : (VIEW.cy || 0) + (n % 4) * 30)), rot: 0 };
+  const cu = ST.customs.find(x => x.id === t); if (cu) { d.label = cu.name; d.w = cu.w; d.h = cu.h; }
+  c.decors.push(d); SEL = { kind: 'decor', id: d.id }; changed();
+}
+function deleteSel() {
+  if (!SEL) return; const c = cur(); snapshot();
+  if (SEL.kind === 'decor') c.decors = c.decors.filter(d => d.id !== SEL.id);
+  else {
+    const gone = c.pieces.find(p => p.id === SEL.id), mid = gone ? { x: gone.x, y: gone.y } : { x: 0, y: 0 };
+    c.pieces = c.pieces.filter(p => p.id !== SEL.id);
+    const an = analyse(c.pieces); const near = an.free.slice().sort((a, b) => Math.hypot(a.x - mid.x, a.y - mid.y) - Math.hypot(b.x - mid.x, b.y - mid.y))[0];
+    c.cursor = near ? { pid: near.pid, i: near.i } : null;
+  }
+  SEL = null; changed();
+}
+function rotateSel() { const d = cur().decors.find(d => SEL && d.id === SEL.id); if (!d) return; snapshot(); d.rot = ((d.rot || 0) + 45) % 360; changed(); }
+function newCircuit() {
+  const c = { id: 'c' + uid(), name: 'Circuit ' + (ST.circuits.length + 1), pieces: [], decors: [], cursor: null };
+  ST.circuits.push(c); ST.current = c.id; HIST = []; SEL = null; changed(); fitView();
+}
+let delArm = 0;
+function deleteCircuit() {
+  if (ST.circuits.length < 2) return toast('Gardez au moins un circuit.');
+  const b = $('#cdel'); if (!delArm) { delArm = 1; b.textContent = 'Confirmer ?'; setTimeout(() => { delArm = 0; b.textContent = 'Supprimer'; }, 3000); return; }
+  delArm = 0; b.textContent = 'Supprimer'; ST.circuits = ST.circuits.filter(c => c.id !== ST.current); ST.current = ST.circuits[0].id; HIST = []; SEL = null; changed(); fitView();
+}
+
+/* --- photos des pièces --- */
+function shrink(file, max = 520) {
+  return new Promise((res, rej) => {
+    const img = new Image(), u = URL.createObjectURL(file);
+    img.onload = () => { const s = Math.min(1, max / Math.max(img.width, img.height)), cv = document.createElement('canvas');
+      cv.width = Math.round(img.width * s); cv.height = Math.round(img.height * s); cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+      URL.revokeObjectURL(u); cv.toBlob(b => b ? res({ blob: b, url: cv.toDataURL('image/jpeg', .78) }) : rej(new Error('image')), 'image/jpeg', .78); };
+    img.onerror = () => { URL.revokeObjectURL(u); rej(new Error('image')); }; img.src = u;
+  });
+}
+async function setPhoto(t, file) {
+  if (!file) return;
+  try {
+    const { blob, url } = await shrink(file); let val = url;
+    if (assetsApi) { try { const r = await assetsApi.upload(blob); val = { id: r.id }; } catch (e) { val = url; } }
+    ST.photos[t] = val; changed(); toast('Photo enregistrée.');
+  } catch (e) { toast('Cette photo n’a pas pu être lue.'); }
+}
+function removePhoto(t) { delete ST.photos[t]; changed(); }
+
+/* ===== APP (2/2) : affichage, gestes, démarrage ===== */
+const IC = {
+  cam: '<svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>',
+  undo: '<svg viewBox="0 0 24 24"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 010 12h-3"/></svg>',
+  plus: '<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>', minus: '<svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg>',
+  fit: '<svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>',
+  rot: '<svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 11-3-6.2"/><path d="M20 4v5h-5"/></svg>', del: '<svg viewBox="0 0 24 24"><path d="M5 7h14M10 7V4h4v3M7 7l1 13h8l1-13"/></svg>'
+};
+const stage = () => $('#stage');
+function setTransform() {
+  const r = stage().getBoundingClientRect(), k = VIEW.k;
+  $('#world').setAttribute('transform', `translate(${f1(r.width / 2 - VIEW.cx * k)} ${f1(r.height / 2 - VIEW.cy * k)}) scale(${k})`);
+}
+function fitView() {
+  const c = cur(), b = bounds(c.pieces, c.decors), r = stage().getBoundingClientRect();
+  const k = Math.min((r.width - 70) / (b.x1 - b.x0 + 80), (r.height - 170) / (b.y1 - b.y0 + 80));
+  VIEW.k = Math.max(0.12, Math.min(1.1, k || .4)); VIEW.cx = (b.x0 + b.x1) / 2; VIEW.cy = (b.y0 + b.y1) / 2; setTransform();
+}
+function zoomBy(f, px, py) {
+  const r = stage().getBoundingClientRect(), nk = Math.max(0.1, Math.min(2, VIEW.k * f));
+  if (px === undefined) { px = r.width / 2; py = r.height / 2; }
+  const wx = VIEW.cx + (px - r.width / 2) / VIEW.k, wy = VIEW.cy + (py - r.height / 2) / VIEW.k;
+  VIEW.k = nk; VIEW.cx = wx - (px - r.width / 2) / nk; VIEW.cy = wy - (py - r.height / 2) / nk; setTransform();
+}
+
+/* --- scène --- */
+function renderWorld() {
+  const c = cur(), an = analyse(c.pieces), clashes = collisions(c.pieces, an), k = VIEW.k;
+  const gOf = {}; an.all.forEach(a => { (gOf[a.pid] = gOf[a.pid] || [])[a.i] = a.g; });
+  const sorted = c.pieces.slice().sort((a, b) => (a.l0 + (TRACKS[a.t].need || 0)) - (b.l0 + (TRACKS[b.t].need || 0)));
+  const dec = d => decorSVG(d, photoSrc(ST.photos[d.t]), SEL && SEL.kind === 'decor' && SEL.id === d.id);
+  let h = c.decors.filter(d => d.t === 'relief').map(dec).join('');
+  h += sorted.map(p => trackSVG(p, { sel: SEL && SEL.kind === 'piece' && SEL.id === p.id, g: gOf[p.id] })).join('');
+  h += c.decors.filter(d => d.t !== 'relief').map(dec).join('');
+  h += (an.gclash || []).map(x => `<circle class="clash gc" cx="${f1(x.x)}" cy="${f1(x.y)}" r="30"/>`).join('');
+  h += clashes.map(x => `<circle class="clash" cx="${f1(x.x)}" cy="${f1(x.y)}" r="${f1(26)}"/>`).join('');
+  const cu = cursorInfo();
+  h += an.free.map(f => { const on = cu && !cu.first && f.pid === cu.pid && f.i === cu.i, r = (on ? 15 : 12) / Math.max(k, .25) * .6 + 8;
+    return (on ? `<circle class="pulse" cx="${f1(f.x)}" cy="${f1(f.y)}" r="${f1(r)}"/>` : '') + `<circle class="port${on ? ' cur' : ''}${f.g === 'M' ? ' pm' : ''}" data-kind="port" data-pid="${f.pid}" data-i="${f.i}" cx="${f1(f.x)}" cy="${f1(f.y)}" r="${f1(r)}"/>`; }).join('');
+  $('#layer').innerHTML = h; setTransform(); return { an, clashes, cu };
+}
+function renderTop(an, clashes) {
+  const c = cur(); const sel = $('#csel');
+  sel.innerHTML = ST.circuits.map(x => `<option value="${x.id}"${x.id === c.id ? ' selected' : ''}>${esc(x.name)}</option>`).join('');
+  const nm = $('#cname'); if (document.activeElement !== nm) nm.value = c.name;
+  const chips = [];
+  if (c.pieces.length) chips.push(an.closed ? '<span class="chip ok">Boucle fermée</span>' : `<span class="chip warn">${an.free.length} extrémité${an.free.length > 1 ? 's' : ''} libre${an.free.length > 1 ? 's' : ''}</span>`);
+  if (an.gclash && an.gclash.length) chips.push(`<span class="chip bad">${an.gclash.length} raccord${an.gclash.length > 1 ? 's' : ''} impossible${an.gclash.length > 1 ? 's' : ''}</span>`);
+  if (clashes.length) chips.push(`<span class="chip bad">${clashes.length} chevauchement${clashes.length > 1 ? 's' : ''}</span>`);
+  chips.push(`<span class="chip">${c.pieces.length} rail${c.pieces.length > 1 ? 's' : ''} posé${c.pieces.length > 1 ? 's' : ''}</span>`);
+  $('#chips').innerHTML = chips.join(''); $('#undo').disabled = !HIST.length;
+}
+function renderBar(an, cu) {
+  const c = cur(); let msg = '', lv = '';
+  if (!c.pieces.length) msg = 'Touchez une pièce à gauche pour poser le premier rail.';
+  else if (an.closed) msg = 'Le circuit est fermé. Toutes les pièces sont raccordées.';
+  else if (cu) {
+    lv = cu.lvl ? `En hauteur · reliefs restants : ${remaining('relief')}` : 'Au sol'; const g = nearestGap(cu, an.free);
+    msg = 'Prochaine pièce : au bout du rail marqué' + (cu.g ? (cu.g === 'M' ? ' (tenon)' : ' (encoche)') : '') + (g && g.d < 700 ? `<small>Autre extrémité à ${Math.round(g.d / 10)} cm, écart d’orientation ${Math.abs(Math.round(g.ang))}°${g.dl ? ', ' + (g.dl > 0 ? 'plus haut' : 'plus bas') : ''}</small>` : '');
+  }
+  $('#bar').innerHTML = (lv ? `<span class="lv">${lv}</span>` : '') + `<span class="msg">${msg}</span>`;
+  const st = $('#seltools');
+  if (SEL) { st.hidden = false; const isD = SEL.kind === 'decor';
+    st.innerHTML = (isD ? `<button class="btn" data-act="rot">${IC.rot}Pivoter</button>` : '') + `<button class="btn danger" data-act="del">${IC.del}Retirer</button>`; } else st.hidden = true;
+}
+function render() { const w = renderWorld(); renderTop(w.an, w.clashes); renderBar(w.an, w.cu); renderSide(); paintNote(); }
+
+/* --- tiroir de gauche --- */
+const thumbHTML = t => ST.photos[t] ? `<img alt="" src="${photoSrc(ST.photos[t])}">` : iconSVG(t);
+function tileHTML(t) {
+  const rest = remaining(t), name = typeName(t), dim = (TRACKS[t] || DECORS[t] || {}).dim || '';
+  return `<button class="tile" data-act="tile" data-t="${t}"${rest <= 0 ? ' disabled' : ''}><span class="thumb">${thumbHTML(t)}</span><b>${esc(name)}</b><small>${esc(dim)}</small><span class="badge${rest <= 0 ? ' zero' : ''}">${rest}</span></button>`;
+}
+function typesOf(cat) {
+  if (cat === 'decors') return [...Object.keys(TRACKS).filter(t => TRACKS[t].cat === 'decors'), ...Object.keys(DECORS).filter(t => DECORS[t].cat === 'relief' || DECORS[t].cat === 'decors'), ...ST.customs.map(c => c.id)];
+  return Object.keys(TRACKS).filter(t => TRACKS[t].cat === cat);
+}
+function rowHTML(t) {
+  const used = countUsed(cur().pieces, cur().decors)[t] || 0, name = typeName(t), dim = (TRACKS[t] || DECORS[t] || {}).dim || '', custom = t.startsWith('c_');
+  return `<div class="row"><label class="thumb" data-act="photo" data-t="${t}" title="Ajouter ou changer la photo">${thumbHTML(t)}<span class="cam">${IC.cam}</span></label>
+    <div><b>${esc(name)}</b><small>${esc(dim)} · ${used} posé${used > 1 ? 's' : ''}</small>
+    ${ST.photos[t] ? `<br><button class="lnk" data-act="rmphoto" data-t="${t}">Retirer la photo</button>` : ''}${custom && !used ? `<br><button class="lnk" data-act="rmcustom" data-t="${t}">Supprimer ce décor</button>` : ''}</div>
+    <div class="step"><button data-act="dec" data-t="${t}" aria-label="Moins">−</button><output>${invOf(t)}</output><button data-act="inc" data-t="${t}" aria-label="Plus">+</button></div></div>`;
+}
+function renderSide() {
+  $('#mode-poser').setAttribute('aria-pressed', MODE === 'poser'); $('#mode-inv').setAttribute('aria-pressed', MODE === 'inv');
+  const tabs = $('#tabs'), list = $('#list'), keep = list.scrollTop;
+  if (MODE === 'poser') {
+    tabs.hidden = false; tabs.innerHTML = CATS.map(([k, n]) => `<button role="tab" data-act="tab" data-k="${k}" aria-selected="${TAB === k}">${n}</button>`).join('');
+    const ts = typesOf(TAB).filter(t => t !== 'relief').filter(t => invOf(t) > 0 || (countUsed(cur().pieces, cur().decors)[t] || 0) > 0);
+    const hint = TAB === 'rails' ? 'Chaque pièce se pose au bout du rail marqué en rouge. Touchez un autre point pour changer d’extrémité. Point plein : tenon (mâle) ; point creux : encoche (femelle). Un tenon ne se raccorde qu’à une encoche.'
+      : TAB === 'ponts' ? 'Un pont se pose toujours en haut d’une rampe : rampe (monter), pont, rampe (descendre). Un pont ne se raccorde jamais à un autre pont : intercalez un rail sur relief ou un adaptateur, puis descendez par une rampe.' : `Un rail en hauteur (hors rampes et ponts) se pose automatiquement sur un relief, un relief par rail. Reliefs restants : ${remaining('relief')}. La gare et le tunnel sont des rails avec leur décor : ils se posent au bout du rail marqué, sans compter dans vos rails droits. Le commissariat se pose au centre de l’écran, puis se déplace au doigt.`;
+    list.innerHTML = `<p class="hint">${hint}</p><div class="grid">${ts.map(tileHTML).join('') || '<p class="hint">Aucune pièce de ce type dans l’inventaire.</p>'}</div>`;
+  } else {
+    tabs.hidden = true;
+    list.innerHTML = `<p class="hint">Réglez le nombre de pièces que vous possédez. Touchez la vignette pour ajouter une photo.</p>` +
+      CATS.map(([k, n]) => `<h3 class="sec">${n}</h3>${typesOf(k).map(rowHTML).join('')}`).join('') +
+      `<h3 class="sec">Ajouter un décor</h3><div class="addform"><input id="newdecor" placeholder="Nom (ex. Pompiers)" maxlength="28"><button class="btn pri" data-act="adddecor">Ajouter</button></div>`;
+  }
+  list.scrollTop = keep;
+}
+function openPop(t, tileEl) {
+  const pop = $('#pop'), def = TRACKS[t], ci = cursorInfo();
+  const list = def.variants.filter(v => !(ci && genderErr(cur().pieces, t, v.k, ci)));
+  if (!list.length) return toast(def.name + ' : raccord impossible ici (tenon contre tenon ou encoche contre encoche).');
+  pop.innerHTML = `<h4>${def.name} : quelle position ?</h4><div class="opts">` + list.map(v => {
+    const err = ci ? (canPlace(t, v.k, ci) || (reliefErr(t, ci) && 'plus de relief')) : 'aucune extrémité libre';
+    return `<button class="opt" data-act="variant" data-t="${t}" data-k="${v.k}"${err ? ' disabled' : ''}><span class="thumb">${iconSVG(t, v.k)}</span><span>${v.label}</span>${err ? `<em>${err}</em>` : ''}</button>`; }).join('') + '</div>';
+  pop.style.top = Math.max(70, Math.min(tileEl.offsetTop - $('#list').scrollTop + tileEl.offsetHeight + 4, $('#side').clientHeight - 270)) + 'px'; pop.classList.add('on');
+}
+const closePop = () => $('#pop').classList.remove('on');
+
+/* --- clics du tiroir et de la barre --- */
+let photoFor = null, NOCLICK = 0;
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-act]'); if (!b) { if (!e.target.closest('#pop')) closePop(); return; }
+  const a = b.dataset.act, t = b.dataset.t;
+  if (a === 'tile') { if (Date.now() < NOCLICK) return; if (TRACKS[t]) { if ((TRACKS[t].variants || []).length > 1) openPop(t, b); else { closePop(); addTrack(t, ''); } } else { closePop(); addDecor(t); } }
+  else if (a === 'variant') { closePop(); addTrack(t, b.dataset.k); }
+  else if (a === 'tab') { TAB = b.dataset.k; closePop(); renderSide(); }
+  else if (a === 'inc' || a === 'dec') { const v = Math.max(0, invOf(t) + (a === 'inc' ? 1 : -1)); if (ST.inv[t] !== undefined || !t.startsWith('c_')) ST.inv[t] = v; else ST.customs.find(c => c.id === t).count = v; changed(); }
+  else if (a === 'photo') { photoFor = t; $('#pfile').value = ''; $('#pfile').click(); e.preventDefault(); }
+  else if (a === 'rmphoto') removePhoto(t);
+  else if (a === 'rmcustom') { ST.customs = ST.customs.filter(c => c.id !== t); delete ST.photos[t]; changed(); }
+  else if (a === 'adddecor') { const i = $('#newdecor'), n = i.value.trim(); if (!n) return toast('Donnez un nom au décor.'); ST.customs.push({ id: 'c_' + uid(), name: n, count: 1, w: 170, h: 130 }); changed(); }
+  else if (a === 'rot') rotateSel(); else if (a === 'del') deleteSel();
+});
+$('#pfile').addEventListener('change', e => setPhoto(photoFor, e.target.files[0]));
+$('#mode-poser').onclick = () => { MODE = 'poser'; closePop(); renderSide(); }; $('#mode-inv').onclick = () => { MODE = 'inv'; closePop(); renderSide(); };
+const GEN = { size: 'moyen', tunnel: 1, gare: 1, commissariat: 0, viaduc: 1, aig: 0 };
+function openGen() { $('#g-msg').textContent = ''; $('#gen').hidden = false; }
+let GENRES = [];
+function keepGenerated(i) {
+  const r = GENRES[i]; if (!r) return;
+  const c = { id: 'c' + uid(), name: (GEN.max ? 'Circuit complet ' : 'Circuit auto ') + (ST.circuits.length + 1), pieces: r.pieces, decors: [], cursor: null };
+  ST.circuits.push(c); ST.current = c.id; HIST = []; SEL = null; changed(); fitView(); $('#gen').hidden = true;
+}
+function runGen() {
+  const order = ['petit', 'moyen', 'grand'], o = { ...GEN }; if (o.aig) { o.max = 0; o.viaduc = 0; } else if (o.max) { o.size = 'grand'; o.tunnel = o.gare = o.commissariat = 1; }
+  let list = [], used = o.size;
+  for (let k = order.indexOf(o.size); k >= 0 && !list.length; k--) { used = order[k]; list = generateMany({ ...o, size: used }, remaining0, 3); }
+  GENRES = list;
+  if (!list.length) { $('#g-res').innerHTML = ''; $('#g-msg').textContent = 'Aucune boucle trouvée avec ces choix. Essayez sans un des éléments.'; return; }
+  $('#g-res').innerHTML = list.map((r, i) => `<button class="gcard" data-gi="${i}">${miniSVG(r.pieces)}<span>${r.pieces.length} pièces${r.bridges ? ' · pont' : ''}${r.loops ? ' · ' + r.loops + ' boucles' : ''}</span></button>`).join('');
+  $('#g-msg').textContent = (!o.max && used !== o.size ? 'Taille réduite : ' + used + '. ' : '') + 'Touchez une proposition pour la garder, ou « Générer » pour d’autres.';
+}
+function miniSVG(pieces) {
+  const b = bounds(pieces, []), w = b.x1 - b.x0, h = b.y1 - b.y0;
+  return `<svg viewBox="${f1(b.x0)} ${f1(b.y0)} ${f1(w)} ${f1(h)}" preserveAspectRatio="xMidYMid meet" aria-hidden="true">${pieces.map(p => trackSVG(p, {})).join('')}</svg>`;
+}
+const remaining0 = t => invOf(t);
+function bindSeg(id, key, num) { const box = $(id); if (!box.querySelectorAll) return; box.querySelectorAll('button').forEach(b => b.onclick = () => { GEN[key] = num ? +b.dataset.v : b.dataset.v; box.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b ? 'true' : 'false')); }); }
+bindSeg('#g-size', 'size', false); bindSeg('#g-via', 'viaduc', true); bindSeg('#g-aig', 'aig', true);
+if ($('#gen .gchecks').querySelectorAll) $('#gen .gchecks').querySelectorAll('button').forEach(b => b.onclick = () => { GEN[b.dataset.k] = GEN[b.dataset.k] ? 0 : 1; b.setAttribute('aria-pressed', GEN[b.dataset.k] ? 'true' : 'false'); });
+$('#cnew').onclick = () => { try { newCircuit(); } catch (e) { toast('Nouveau : ' + e.message + (e.stack ? ' ← ' + e.stack.split('\n')[1].trim().slice(0, 90) : ''), 15000); } };
+$('#g-res').onclick = e => { const b = e.target.closest && e.target.closest('[data-gi]'); if (b) keepGenerated(+b.dataset.gi); };
+$('#cgen').onclick = openGen; $('#g-cancel').onclick = () => { $('#gen').hidden = true; }; $('#g-go').onclick = () => { try { runGen(); } catch (e) { $('#g-msg').textContent = 'Erreur : ' + e.message + (e.stack ? ' ← ' + e.stack.split('\n')[1].trim().slice(0, 90) : ''); } };
+$('#undo').onclick = undo; $('#cdel').onclick = deleteCircuit;
+$('#csel').onchange = e => { ST.current = e.target.value; HIST = []; SEL = null; changed(); fitView(); };
+$('#cname').oninput = e => { cur().name = e.target.value || 'Sans titre'; changed(false); renderTop(...(() => { const w = analyse(cur().pieces); return [w, collisions(cur().pieces, w)]; })()); };
+$('#zin').onclick = () => zoomBy(1.25); $('#zout').onclick = () => zoomBy(0.8); $('#zfit').onclick = fitView;
+document.addEventListener('keydown', e => { if ((e.metaKey || e.ctrlKey) && e.key === 'z') { e.preventDefault(); undo(); } if ((e.key === 'Delete' || e.key === 'Backspace') && SEL && !/INPUT|SELECT/.test(document.activeElement.tagName)) deleteSel(); });
+
+/* --- gestes : un doigt déplace, deux doigts zooment, un appui sélectionne --- */
+const ptrs = new Map(); let G = null;
+const svg = $('#svg');
+svg.addEventListener('pointerdown', e => {
+  svg.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  const hit = e.target.closest('[data-kind]');
+  if (ptrs.size === 2) { const [a, b] = [...ptrs.values()]; G = { mode: 'pinch', d: Math.hypot(a.x - b.x, a.y - b.y), k: VIEW.k }; return; }
+  G = { mode: 'tap', sx: e.clientX, sy: e.clientY, hit: hit ? { ...hit.dataset } : null, cx: VIEW.cx, cy: VIEW.cy, t0: Date.now() };
+  if (hit && hit.dataset.kind === 'decor') { const d = cur().decors.find(d => d.id === hit.dataset.id); if (d) G.dec = { id: d.id, x: d.x, y: d.y }; }
+});
+svg.addEventListener('pointermove', e => {
+  if (!ptrs.has(e.pointerId)) return; ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY }); if (!G) return;
+  if (G.mode === 'pinch' && ptrs.size === 2) { const [a, b] = [...ptrs.values()]; const nk = G.k * Math.hypot(a.x - b.x, a.y - b.y) / G.d, r = stage().getBoundingClientRect();
+    zoomBy(nk / VIEW.k, (a.x + b.x) / 2 - r.left, (a.y + b.y) / 2 - r.top); return; }
+  const dx = e.clientX - G.sx, dy = e.clientY - G.sy;
+  if (G.mode === 'tap' && Math.hypot(dx, dy) > 7) { G.mode = G.dec ? 'dec' : 'pan'; if (G.dec) { snapshot(); SEL = { kind: 'decor', id: G.dec.id }; } }
+  if (G.mode === 'pan') { VIEW.cx = G.cx - dx / VIEW.k; VIEW.cy = G.cy - dy / VIEW.k; setTransform(); }
+  if (G.mode === 'dec') { const d = cur().decors.find(d => d.id === G.dec.id); d.x = Math.round(G.dec.x + dx / VIEW.k); d.y = Math.round(G.dec.y + dy / VIEW.k); renderWorld(); }
+});
+function endPtr(e) {
+  ptrs.delete(e.pointerId); if (!G) return; const g = G; if (ptrs.size) return; G = null;
+  if (g.mode === 'dec') { changed(); return; }
+  if (g.mode !== 'tap') return;
+  const h = g.hit; closePop();
+  if (!h) SEL = null;
+  else if (h.kind === 'port') { cur().cursor = { pid: h.pid, i: +h.i }; SEL = null; }
+  else SEL = { kind: h.kind, id: h.id };
+  render();
+}
+svg.addEventListener('pointerup', endPtr); svg.addEventListener('pointercancel', e => { ptrs.delete(e.pointerId); G = null; });
+svg.addEventListener('wheel', e => { e.preventDefault(); const r = stage().getBoundingClientRect(); zoomBy(e.deltaY < 0 ? 1.12 : 0.89, e.clientX - r.left, e.clientY - r.top); }, { passive: false });
+window.addEventListener('resize', setTransform);
+
+/* --- erreurs visibles (utile sur tablette) --- */
+window.addEventListener('error', e => { try { toast('Erreur : ' + (e.message || 'inconnue') + ' [' + e.lineno + ':' + e.colno + ']', 12000); } catch (x) { } });
+window.addEventListener('unhandledrejection', e => { try { toast('Erreur : ' + ((e.reason && e.reason.message) || e.reason || 'inconnue')); } catch (x) { } });
+/* --- démarrage --- */
+(function boot() {
+  let d = null; try { d = JSON.parse(localStorage.getItem(LS_KEY) || 'null'); } catch (e) { }
+  if (!adopt(d)) ST = exampleState();
+  const ex = $('#zfit'); render(); requestAnimationFrame(() => { fitView(); });
+  connect();
+})();
+async function connect() {
+  const claude = window.claude; if (!claude || !claude.use) { saveNote = 'Sauvegarde sur cet appareil seulement'; return paintNote(); }
+  try { assetsApi = await claude.use('assets'); } catch (e) { assetsApi = null; }
+  let db = null; try { db = await claude.use('db'); } catch (e) { }
+  if (!db) { saveNote = 'Sauvegarde sur cet appareil seulement'; return paintNote(); }
+  dbDoc = db.doc('app/etat'); let slow = setTimeout(() => { saveNote = 'Sauvegarde en ligne injoignable pour l’instant'; paintNote(); }, 10000);
+  dbDoc.onSnapshot(snap => {
+    if (!snap.metadata.fromCache) clearTimeout(slow);
+    saveNote = dirty ? saveNote : (snap.exists ? 'Enregistré' : 'Prêt'); const dt = snap.exists ? snap.data() : null;
+    if (dt && !MYREVS.has(dt.rev) && !(dt.t <= localT) && !snap.metadata.hasPendingWrites && !dirty && !saving && !G) { if (adopt(dt)) { localT = dt.t || Date.now(); SEL = null; HIST = []; render(); fitView(); } } paintNote();
+  }, err => { clearTimeout(slow); saveNote = 'Sauvegarde en ligne indisponible'; paintNote(); });
+}
+
+/* ===== EXTRA : export / import, liste de montage, glisser-déposer ===== */
+let dlApi = null;
+(async function () { const c = window.claude; if (!c || !c.use) return; try { dlApi = await c.use('downloads'); } catch (e) { dlApi = null; } })();
+
+/* --- export / import --- */
+const openModal = id => { $(id).hidden = false; }, closeModal = id => { $(id).hidden = true; };
+function exportText(all) {
+  const photos = {}; Object.keys(ST.photos).forEach(k => { if (typeof ST.photos[k] === 'string') photos[k] = ST.photos[k]; });
+  return JSON.stringify({ brio: 1, exporte: new Date().toISOString(), inv: ST.inv, customs: ST.customs, photos, circuits: all ? ST.circuits : [cur()] });
+}
+async function doExport(all) {
+  const txt = exportText(all), name = (all ? 'circuits-brio' : 'circuit-' + (cur().name || 'brio').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')) + '-' + new Date().toISOString().slice(0, 10) + '.json';
+  $('#f-text').value = txt;
+  if (!dlApi && window.STANDALONE) {
+    try {
+      const file = new File([txt], name, { type: 'application/json' });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) await navigator.share({ files: [file], title: name });
+      else { const a = document.createElement('a'); a.href = URL.createObjectURL(file); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 5000); }
+      $('#f-msg').textContent = 'Fichier prêt : ' + name;
+    } catch (e) { $('#f-msg').textContent = e && e.name === 'AbortError' ? 'Annulé.' : 'Enregistrement impossible : copiez le texte ci-dessus.'; }
+    return;
+  }
+  if (!dlApi) { $('#f-msg').textContent = 'L’enregistrement direct n’est pas disponible ici : copiez le texte ci-dessus et collez-le dans un fichier .json.'; return; }
+  try { await dlApi.save({ filename: name, data: txt }); $('#f-msg').textContent = 'Fichier proposé : ' + name; }
+  catch (e) { $('#f-msg').textContent = e && e.code === 'declined' ? 'Enregistrement annulé.' : 'Enregistrement impossible : copiez le texte ci-dessus.'; }
+}
+function importText(txt, withInv) {
+  let d; try { d = JSON.parse(txt); } catch (e) { return 'Ce texte n’est pas un fichier de circuits valide.'; }
+  if (!d || !Array.isArray(d.circuits) || !d.circuits.length) return 'Aucun circuit dans ce fichier.';
+  const names = new Set(ST.circuits.map(c => c.name)); let n = 0, first = null;
+  for (const c of d.circuits) {
+    if (!c || !Array.isArray(c.pieces)) continue;
+    const pieces = c.pieces.filter(p => p && TRACKS[p.t] && isFinite(p.x) && isFinite(p.y)).map(p => ({ id: String(p.id || 'p' + uid()), t: p.t, vk: p.vk || '', x: +p.x, y: +p.y, rot: +p.rot || 0, l0: +p.l0 || 0, e: +p.e || 0 }));
+    const decors = (Array.isArray(c.decors) ? c.decors : []).filter(x => x && DECORS[x.t] && DECORS[x.t].cat !== 'relief' && isFinite(x.x) && isFinite(x.y)).map(x => ({ ...x, id: String(x.id || 'd' + uid()) }));
+    let name = String(c.name || 'Circuit importé').slice(0, 40); if (names.has(name)) name += ' (importé)'; names.add(name);
+    const nc = { id: 'c' + uid(), name, pieces, decors, cursor: null }; ST.circuits.push(nc); first = first || nc; n++;
+  }
+  if (!n) return 'Aucun circuit lisible dans ce fichier.';
+  if (withInv) {
+    if (d.inv && typeof d.inv === 'object') Object.keys(d.inv).forEach(k => { if (typeof d.inv[k] === 'number') ST.inv[k] = d.inv[k]; });
+    if (Array.isArray(d.customs)) d.customs.forEach(cu => { if (cu && cu.id && !ST.customs.some(x => x.id === cu.id)) ST.customs.push(cu); });
+    if (d.photos && typeof d.photos === 'object') Object.keys(d.photos).forEach(k => { if (typeof d.photos[k] === 'string' && d.photos[k].startsWith('data:image/')) ST.photos[k] = d.photos[k]; });
+  }
+  ST.current = first.id; HIST = []; SEL = null; changed(); fitView();
+  return n + ' circuit' + (n > 1 ? 's importés' : ' importé') + '.';
+}
+let F_INV = false;
+$('#cfile').onclick = () => { $('#f-msg').textContent = ''; openModal('#file'); };
+$('#f-close').onclick = () => closeModal('#file');
+$('#f-one').onclick = () => doExport(false); $('#f-all').onclick = () => doExport(true);
+$('#f-inv').onclick = () => { F_INV = !F_INV; $('#f-inv').setAttribute('aria-pressed', F_INV ? 'true' : 'false'); };
+$('#f-paste').onclick = () => { $('#f-msg').textContent = importText($('#f-text').value, F_INV); };
+$('#f-copy').onclick = async () => { const t = $('#f-text'); if (!t.value) doExport(true); try { await navigator.clipboard.writeText($('#f-text').value); $('#f-msg').textContent = 'Texte copié.'; } catch (e) { t.focus(); t.select && t.select(); $('#f-msg').textContent = 'Sélectionnez le texte puis copiez-le.'; } };
+$('#f-file').onchange = e => { const f = e.target.files && e.target.files[0]; if (!f) return; const rd = new FileReader(); rd.onload = () => { $('#f-msg').textContent = importText(String(rd.result), F_INV); }; rd.onerror = () => { $('#f-msg').textContent = 'Lecture du fichier impossible.'; }; rd.readAsText(f); e.target.value = ''; };
+
+/* --- liste de montage --- */
+function pieceLabel(p) {
+  const def = TRACKS[p.t], v = variantByKey(p.t, p.vk); let s = def.name;
+  if (def.dim && /mâle|femelle/.test(def.dim)) s += ' ' + def.dim.split(',')[0];
+  else if (def.sw) s += ' (' + def.dim + ')';
+  if (def.arc) s += v.m > 0 ? ', à droite' : ', à gauche';
+  if (def.ramp) s += p.vk === 'down' ? ', descente' : ', montée';
+  if (def.sw && v.label) s += ' — ' + v.label.toLowerCase();
+  return s;
+}
+function openMont() {
+  const c = cur(), used = countUsed(c.pieces, c.decors); $('#m-title').textContent = 'Liste de montage · ' + c.name;
+  const types = Object.keys(used).filter(t => t !== 'relief' && (TRACKS[t] || DECORS[t] || ST.customs.some(x => x.id === t)));
+  const rows = types.map(t => { const have = invOf(t), n = used[t]; return `<tr><td>${esc(typeName(t))}${(TRACKS[t] || {}).dim ? ' <small>' + esc(TRACKS[t].dim) + '</small>' : ''}</td><td class="${n > have ? 'bad' : ''}">${n}${n > have ? ' / ' + have + ' !' : ''}</td></tr>`; });
+  if (used.relief) rows.push(`<tr><td>Relief (sous les rails en hauteur)</td><td class="${used.relief > invOf('relief') ? 'bad' : ''}">${used.relief}</td></tr>`);
+  const an = analyse(c.pieces), steps = c.pieces.map((p, i) => { const def = TRACKS[p.t], lv = Math.round(p.l0);
+    return `<li data-pid="${p.id}"><span>${esc(pieceLabel(p))}</span>${def.ramp ? '<em>rampe</em>' : (def.bridge || lv >= 1) ? '<em>en hauteur</em>' : ''}</li>`; });
+  $('#m-body').innerHTML = c.pieces.length ? `<h3>À sortir de la boîte</h3><table class="mtable">${rows.join('')}</table>
+    <h3>Ordre de pose (touchez une étape pour la repérer sur le plan)</h3><ol class="msteps">${steps.join('')}</ol>
+    <p class="gsub" style="margin-top:12px">${an.closed ? 'Boucle fermée.' : an.free.length + ' extrémité(s) libre(s).'} Le circuit se pose en partant de la pièce 1 et en suivant l’ordre.</p>` : '<p class="gsub">Ce circuit est vide.</p>';
+  $('#m-msg').textContent = ''; openModal('#mont');
+}
+$('#cmont').onclick = openMont; $('#m-close').onclick = () => closeModal('#mont');
+$('#m-body').onclick = e => { const li = e.target.closest && e.target.closest('li[data-pid]'); if (!li) return; const p = cur().pieces.find(x => x.id === li.dataset.pid); if (!p) return;
+  const q = worldPorts(p); VIEW.cx = (q[0].x + q[q.length - 1].x) / 2; VIEW.cy = (q[0].y + q[q.length - 1].y) / 2; SEL = { kind: 'piece', id: p.id }; closeModal('#mont'); render(); };
+
+/* --- glisser-déposer : appui long (tactile) ou glisser (souris) sur une pièce, dépôt près d'une extrémité libre --- */
+let DD = null;
+const toWorld = (px, py) => { const r = stage().getBoundingClientRect(); return { x: VIEW.cx + (px - r.left - r.width / 2) / VIEW.k, y: VIEW.cy + (py - r.top - r.height / 2) / VIEW.k, inside: px >= r.left && px <= r.right && py >= r.top && py <= r.bottom }; };
+function dropTarget(px, py) {
+  const w = toWorld(px, py); if (!w.inside) return { w, port: null };
+  const free = analyse(cur().pieces).free; let best = null;
+  for (const f of free) { const d = Math.hypot(f.x - w.x, f.y - w.y) * VIEW.k; if (d < 140 && (!best || d < best.d)) best = { d, f }; }
+  return { w, port: best && best.f };
+}
+function pickVariant(t, ci, w) {
+  const def = TRACKS[t], vs = def.variants || [{ k: '', m: 1, e: 0 }]; let best = null, why = null;
+  for (const v of vs) {
+    const err = canPlace(t, v.k, ci) || reliefErr(t, ci) || genderErr(cur().pieces, t, v.k, ci); if (err) { why = why || err; continue; }
+    const p = placePiece(t, v.k, ci, '__t'), far = worldPorts(p).filter(q => q.i !== p.e).map(q => Math.hypot(q.x - w.x, q.y - w.y)), d = Math.min(...far);
+    if (!best || d < best.d) best = { d, k: v.k };
+  }
+  return best ? { k: best.k } : { err: why };
+}
+function startDrag() {
+  if (!DD || DD.on) return; DD.on = true; NOCLICK = Date.now() + 100000; closePop();
+  const th = DD.tile.querySelector && DD.tile.querySelector('.thumb'); const g = document.createElement('div'); g.className = 'ghost'; g.innerHTML = th ? th.innerHTML : ''; document.body.appendChild(g); DD.ghost = g; moveGhost(DD.x, DD.y);
+}
+function moveGhost(x, y) { if (!DD || !DD.ghost) return; DD.ghost.style.left = x + 'px'; DD.ghost.style.top = y + 'px'; }
+document.addEventListener('pointerdown', e => {
+  const tile = e.target.closest && e.target.closest('.tile'); if (!tile || tile.disabled || DD) return;
+  DD = { t: tile.dataset.t, tile, id: e.pointerId, x: e.clientX, y: e.clientY, sx: e.clientX, sy: e.clientY, on: false, touch: e.pointerType !== 'mouse', ghost: null, timer: null };
+  if (DD.touch) DD.timer = setTimeout(startDrag, 320);
+});
+document.addEventListener('pointermove', e => {
+  if (!DD || e.pointerId !== DD.id) return; DD.x = e.clientX; DD.y = e.clientY; const moved = Math.hypot(e.clientX - DD.sx, e.clientY - DD.sy);
+  if (!DD.on) { if (DD.touch) { if (moved > 10) { clearTimeout(DD.timer); DD = null; } } else if (moved > 7) startDrag(); return; }
+  moveGhost(e.clientX, e.clientY); const tg = dropTarget(e.clientX, e.clientY);
+  if (tg.port && TRACKS[DD.t]) { const c = cur(); if (!c.cursor || c.cursor.pid !== tg.port.pid || c.cursor.i !== tg.port.i) { c.cursor = { pid: tg.port.pid, i: tg.port.i }; renderWorld(); } }
+});
+function endDrag(e, cancel) {
+  if (!DD || e.pointerId !== DD.id) return; clearTimeout(DD.timer); const d = DD; DD = null;
+  if (!d.on) return; if (d.ghost) d.ghost.remove(); setTimeout(() => { NOCLICK = 0; }, 350); NOCLICK = Date.now() + 350;
+  if (cancel) return;
+  const tg = dropTarget(e.clientX, e.clientY); if (!tg.w.inside) return;
+  try {
+    if (!TRACKS[d.t]) { DROP = { x: tg.w.x, y: tg.w.y }; addDecor(d.t); return; }
+    const c = cur();
+    if (!c.pieces.length) { DROP = { x: tg.w.x, y: tg.w.y }; const ci = cursorInfo(), v = pickVariant(d.t, ci, tg.w); if (v.err) return toast(typeName(d.t) + ' : ' + v.err + '.'); addTrack(d.t, v.k); return; }
+    if (!tg.port) return toast('Déposez la pièce près d’une extrémité libre du circuit.');
+    c.cursor = { pid: tg.port.pid, i: tg.port.i }; const ci = cursorInfo(), v = pickVariant(d.t, ci, tg.w);
+    if (v.err) return toast(typeName(d.t) + ' : ' + v.err + '.'); addTrack(d.t, v.k);
+  } finally { DROP = null; }
+}
+document.addEventListener('pointerup', e => endDrag(e, false)); document.addEventListener('pointercancel', e => endDrag(e, true));
+document.addEventListener('touchmove', e => { if (DD && DD.on && e.cancelable) e.preventDefault(); }, { passive: false });
+document.addEventListener('contextmenu', e => { if (DD) e.preventDefault(); });
+
+/* ===== EXPORT PDF : plan numéroté + pièces à sortir + ordre de pose (PDF écrit à la main, sans bibliothèque) ===== */
+const CP1252 = { '’': 0x92, '‘': 0x91, '“': 0x93, '”': 0x94, '–': 0x96, '—': 0x97, '…': 0x85, '€': 0x80, '≈': 0x7e, '•': 0xb7 };
+function pdfStr(s) {
+  const o = []; for (const ch of String(s)) { const c = ch.codePointAt(0); const b = c < 0x80 ? c : (c >= 0xa0 && c <= 0xff) ? c : (CP1252[ch] || 0x3f); if (b === 0x28 || b === 0x29 || b === 0x5c) o.push(0x5c); o.push(b); }
+  return o;
+}
+function buildPdf(pages, jpg) {
+  // pages : [{ ops: string[] (contenus déjà formatés), image?: true }]
+  const parts = [], offs = []; let len = 0;
+  const raw = t => Uint8Array.from(t, ch => ch.charCodeAt(0) & 255), push = b => { const u = typeof b === 'string' ? raw(b) : b; parts.push(u); len += u.length; };
+  const obj = (n, body) => { offs[n] = len; push(n + ' 0 obj\n'); push(body); push('\nendobj\n'); };
+  const N = pages.length, kids = pages.map((_, i) => (6 + i * 2) + ' 0 R').join(' ');
+  push('%PDF-1.4\n');
+  obj(1, '<< /Type /Catalog /Pages 2 0 R >>');
+  obj(2, `<< /Type /Pages /Kids [${kids}] /Count ${N} >>`);
+  obj(3, '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>');
+  obj(4, '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>');
+  if (jpg) { offs[5] = len; push(`5 0 obj\n<< /Type /XObject /Subtype /Image /Width ${jpg.w} /Height ${jpg.h} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${jpg.bytes.length} >>\nstream\n`); push(jpg.bytes); push('\nendstream\nendobj\n'); }
+  else obj(5, '<< >>');
+  pages.forEach((p, i) => {
+    const pn = 6 + i * 2, cn = pn + 1, content = p.ops.join('\n');
+    obj(pn, `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R /F2 4 0 R >>${p.image ? ' /XObject << /Im 5 0 R >>' : ''} >> /Contents ${cn} 0 R >>`);
+    const cb = raw(content); offs[cn] = len; push(`${cn} 0 obj\n<< /Length ${cb.length} >>\nstream\n`); push(cb); push('\nendstream\nendobj\n');
+  });
+  const total = 6 + N * 2, xref = len; push(`xref\n0 ${total}\n0000000000 65535 f \n`);
+  for (let i = 1; i < total; i++) push(String(offs[i]).padStart(10, '0') + ' 00000 n \n');
+  push(`trailer\n<< /Size ${total} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF`);
+  const out = new Uint8Array(len); let k = 0; for (const u of parts) { out.set(u, k); k += u.length; } return out;
+}
+const pdfText = (x, y, size, s, bold) => `BT /F${bold ? 2 : 1} ${size} Tf ${x} ${y} Td (${String.fromCharCode(...pdfStr(s))}) Tj ET`;
+
+function lightCSS() {
+  let out = '';
+  for (const sh of document.styleSheets) { let rules; try { rules = sh.cssRules; } catch (e) { continue; }
+    for (const r of rules) { if (r.type === 1) { if (!/data-theme/.test(r.selectorText || '')) out += r.cssText + '\n'; } else if (r.type === 4 && !/prefers-color-scheme/.test(r.conditionText || (r.media && r.media.mediaText) || '')) out += r.cssText + '\n'; } }
+  return out;
+}
+function planSVG(c, W) {
+  const b = bounds(c.pieces, c.decors || []), m = 70, x0 = b.x0 - m, y0 = b.y0 - m, w = b.x1 - b.x0 + 2 * m, h = b.y1 - b.y0 + 2 * m, H = Math.round(W * h / w);
+  const defs = (document.querySelector('#svg defs') || { innerHTML: '' }).innerHTML;
+  const pcs = c.pieces.map(p => trackSVG(p, {})).join(''), dec = (c.decors || []).map(d => decorSVG(d, null, false)).join('');
+  const nums = c.pieces.map((p, i) => { const q = worldPorts(p), a = q[0], z = q[q.length - 1], x = (a.x + z.x) / 2, y = (a.y + z.y) / 2; return `<g transform="translate(${f1(x)} ${f1(y)})"><circle r="17" fill="#1d2a33" stroke="#fff" stroke-width="3"/><text y="6" text-anchor="middle" font-size="${i > 98 ? 14 : 18}" font-weight="700" font-family="Helvetica,Arial,sans-serif" fill="#fff">${i + 1}</text></g>`; }).join('');
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="${f1(x0)} ${f1(y0)} ${f1(w)} ${f1(h)}"><style>${lightCSS()}</style><defs>${defs}</defs><rect x="${f1(x0)}" y="${f1(y0)}" width="${f1(w)}" height="${f1(h)}" fill="#ffffff"/>${dec}${pcs}${nums}</svg>`;
+  return { svg, W, H };
+}
+async function planJPEG(c) {
+  const { svg, W, H } = planSVG(c, 1700), img = new Image(), url = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' }));
+  await new Promise((ok, ko) => { img.onload = ok; img.onerror = () => ko(new Error('image du plan')); img.src = url; });
+  const cv = document.createElement('canvas'); cv.width = W; cv.height = H; const g = cv.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, W, H); g.drawImage(img, 0, 0, W, H); URL.revokeObjectURL(url);
+  const data = cv.toDataURL('image/jpeg', 0.92).split(',')[1], bin = atob(data), bytes = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return { bytes, w: W, h: H };
+}
+function guideRows(c) {
+  const used = countUsed(c.pieces, c.decors || []);
+  const rows = Object.keys(used).filter(t => t !== 'relief' && (TRACKS[t] || DECORS[t])).map(t => [typeName(t) + ((TRACKS[t] || {}).dim ? '  (' + TRACKS[t].dim + ')' : ''), String(used[t]), used[t] > invOf(t)]);
+  if (used.relief) rows.push(['Relief (sous les rails en hauteur)', String(used.relief), used.relief > invOf('relief')]);
+  const steps = c.pieces.map((p, i) => { const def = TRACKS[p.t], lv = Math.round(p.l0); return (i + 1) + '.  ' + pieceLabel(p) + (def.ramp ? '   [rampe]' : (def.bridge || lv >= 1) ? '   [en hauteur]' : ''); });
+  return { rows, steps };
+}
+async function makeGuidePDF(c) {
+  const an = analyse(c.pieces), jpg = await planJPEG(c), { rows, steps } = guideRows(c), date = new Date().toLocaleDateString('fr-FR');
+  const pages = []; const box = { w: 515, h: 600 }, k = Math.min(box.w / jpg.w, box.h / jpg.h), iw = jpg.w * k, ih = jpg.h * k;
+  pages.push({ image: true, ops: [pdfText(40, 790, 20, c.name || 'Circuit', true), pdfText(40, 770, 10, (an.closed ? 'Boucle fermée' : an.free.length + ' extrémité(s) libre(s)') + '  ·  ' + c.pieces.length + ' pièces  ·  ' + date + '  ·  Circuits Brio'),
+    `q ${f1(iw)} 0 0 ${f1(ih)} ${f1(40 + (box.w - iw) / 2)} ${f1(755 - ih)} cm /Im Do Q`, pdfText(40, 40, 9, 'Les numéros du plan correspondent à l’ordre de pose du guide de montage (pages suivantes).')] });
+  let ops = [], y = 790; const flush = () => { pages.push({ ops }); ops = []; y = 800; };
+  ops.push(pdfText(40, y, 15, 'À sortir de la boîte', true)); y -= 22;
+  for (const [l, n, bad] of rows) { if (y < 60) flush(); ops.push(pdfText(40, y, 11, l), pdfText(500, y, 11, n + (bad ? ' !' : ''), true)); ops.push(`0.85 g 40 ${y - 4} 515 0.5 re f 0 g`); y -= 17; }
+  y -= 12; if (y < 100) flush(); ops.push(pdfText(40, y, 15, 'Ordre de pose', true)); y -= 22;
+  ops.push(pdfText(40, y, 9, 'Poser dans l’ordre en partant de la pièce 1 ; chaque pièce se raccorde à la précédente (tenon dans encoche).')); y -= 20;
+  for (const s of steps) { if (y < 55) flush(); ops.push(pdfText(40, y, 11, s)); y -= 16; }
+  pages.push({ ops });
+  return buildPdf(pages, jpg);
+}
+async function savePDF() {
+  const c = cur(), msg = $('#m-msg'); msg.textContent = 'Préparation du PDF…';
+  try {
+    const bytes = await makeGuidePDF(c), name = 'guide-' + (c.name || 'circuit').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '.pdf';
+    if (dlApi) { await dlApi.save({ filename: name, data: bytes }); msg.textContent = 'PDF proposé : ' + name; return; }
+    const file = new File([bytes], name, { type: 'application/pdf' });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) await navigator.share({ files: [file], title: name });
+    else { const a = document.createElement('a'); a.href = URL.createObjectURL(file); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 8000); }
+    msg.textContent = 'PDF prêt : ' + name + '. Depuis la feuille de partage, choisissez « Imprimer » pour l’imprimer.';
+  } catch (e) { msg.textContent = e && e.name === 'AbortError' ? 'Annulé.' : 'Impossible de créer le PDF : ' + (e && e.message || e); }
+}
+$('#m-pdf').onclick = savePDF;
+
+</script>
+
+</body></html>
