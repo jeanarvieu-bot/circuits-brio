@@ -1,8 +1,8 @@
 /* Service worker de Circuits Brio : fonctionnement hors connexion.
    Les fichiers de l'application sont servis depuis le cache et mis à jour en arrière-plan.
    Pour forcer une mise à jour de tous les appareils, changer le numéro de version ci-dessous. */
-const CACHE = 'circuits-brio-v1';
-const CORE = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './icon-maskable-512.png', './apple-touch-icon.png'];
+const CACHE = 'circuits-brio-v2';
+const CORE = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './icon-maskable-512.png', './apple-touch-icon.png', './confort.css', './confort.js'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(CORE)).then(() => self.skipWaiting()));
