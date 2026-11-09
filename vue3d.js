@@ -135,13 +135,18 @@
       }
     }
     if (def.station) {
-      const top = z0 + 6;
-      box(tf, -14, -74, 158, 50, Math.min(0, z0 - 1), Math.max(z0, 14) - 0, pal.base, pal.base, { bias: 120 });
-      box(tf, 0, -66, 144, -26, z0, z0 + 6, mix(pal.plat, [0, 0, 0], 0.2), pal.plat, { bias: 60 });
-      box(tf, 0, -28, 144, -24, z0, z0 + 7, [255, 255, 255], [255, 255, 255], { edge: 0, bias: 55 });
-      [[6, -30], [138, -30]].forEach(([x, y]) => box(tf, x - 4, y - 4, x + 4, y + 4, top, z0 + 72, pal.post, pal.post));
-      box(tf, -18, -90, 162, -34, z0 + 72, z0 + 82, mix(pal.green, [0, 0, 0], 0.2), pal.green, { bias: 70 });
-      railOn(paths, Math.max(0, 14 - 14) + (z0 ? 0 : 8));
+      /* la gare repose sur le sol : dalle, deux quais le long desquels des rails au sol peuvent passer,
+         et, au centre, son rail intégré porté en hauteur par un socle de relief intégré */
+      const zs = Math.max(z0, 14);
+      box(tf, -14, -74, 158, 50, 0, 4, pal.base, pal.base, { bias: 120 });
+      box(tf, 0, -70, 144, -30, 4, 12, mix(pal.plat, [0, 0, 0], 0.2), pal.plat, { bias: 60 });
+      box(tf, 0, 30, 144, 48, 4, 12, mix(pal.plat, [0, 0, 0], 0.2), pal.plat, { bias: 40 });
+      box(tf, 0, -33, 144, -30, 4, 13, [255, 255, 255], [255, 255, 255], { edge: 0, bias: 55 });
+      box(tf, 0, 30, 144, 33, 4, 13, [255, 255, 255], [255, 255, 255], { edge: 0, bias: 35 });
+      box(tf, 0, -24, 144, 24, 4, zs, mix(pal.rock, [0, 0, 0], 0.1), mix(pal.rock, [255, 255, 255], 0.12), { bias: 80 });
+      [[6, -52], [138, -52]].forEach(([x, y]) => box(tf, x - 4, y - 4, x + 4, y + 4, 12, 72, pal.post, pal.post));
+      box(tf, -18, -74, 162, -30, 72, 82, mix(pal.green, [0, 0, 0], 0.2), pal.green, { bias: 70 });
+      railOn(paths, z0 ? 0 : 8);
     }
     if (def.police) {
       box(tf, -6, -86, 150, -20, z0, z0 + 62, pal.body, mix(pal.body, [255, 255, 255], 0.2));
