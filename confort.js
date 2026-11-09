@@ -128,20 +128,35 @@
   }
 })();
 
-/* ---------- Circuit d'exemple : gare à 3 quais ---------- */
+/* ---------- Option « Gare à trois voies » du générateur ---------- */
 (function () {
   'use strict';
-  const D = [["gare","",0,0,0,1,0],["droit_mini_ff","",144,0,0,1,0],["rampe","down",414,-0.0,180,0,1],["courbe","D",414,-0.0,0,0,0],["courbe","D",556.84,59.16,45,0,0],["courbe","D",616,202.0,90,0,0],["courbe","D",556.84,344.84,135,0,0],["aiguillage_m","D",414,404.0,180,0,0],["droit_moyen","",271.16,404.0,180,0,0],["aiguillage_lev_m","D",127.16,404.0,180,0,0],["droit_court","",-15.67,404.0,180,0,0],["droit_mini_mm","",-123.67,404.0,180,0,0],["droit_moyen","",-177.67,404.0,180,0,0],["courbe","D",-321.67,404.0,180,0,0],["courbe","D",-464.51,344.84,225,0,0],["courbe","D",-523.67,202.0,270,0,0],["courbe","D",-464.51,59.16,315,0,0],["rampe","up",-321.67,-0.0,0,0,0],["droit_court","",-105.67,-0.0,0,1,0],["courbe","D",271.16,344.84,225,0,0],["droit_long","",212.0,202.0,270,0,0],["droit_court","",212.0,-14.0,270,0,0],["courbe","D",-15.67,344.84,225,0,0],["droit_long","",-74.84,202.0,270,0,0],["droit_court","",-74.84,-14.0,270,0,0]];
-  const box = document.querySelector('#gen .gbox');
-  if (!box || typeof ST === 'undefined') return;
-  const b = document.createElement('button'); b.className = 'btn'; b.type = 'button';
-  b.textContent = 'Exemple : gare à 3 quais'; b.style.margin = '8px 0 0';
-  b.onclick = () => {
-    const pieces = D.map((a, i) => ({ id: 'q' + i + '_' + Date.now().toString(36), t: a[0], vk: a[1], x: a[2], y: a[3], rot: a[4], l0: a[5], e: a[6] }));
-    ST.circuits.push({ id: 'c' + Date.now().toString(36), name: 'Gare à 3 quais', pieces, decors: [], cursor: null });
-    ST.current = ST.circuits[ST.circuits.length - 1].id; HIST = []; SEL = null; changed(); fitView(); document.querySelector('#gen').hidden = true;
+  // Quai 1 : rail surélevé de la gare, entre deux ponts. Quais 2 et 3 : deux voies au sol qui passent sous les ponts, de chaque côté de la gare.
+  // Aucune voie au sol ne passe sous une rampe.
+  const T = [[["gare","",0,0,0,1,0],["pont","",144,0,0,1,0],["droit_mini_ff","",288,0,0,1,0],["rampe","down",558,-0.0,180,0,1],["courbe","D",558,-0.0,0,0,0],["courbe","D",700.84,59.16,45,0,0],["courbe","D",760,202.0,90,0,0],["courbe","D",700.84,344.84,135,0,0],["droit_court","",558,404.0,180,0,0],["droit_mini_mm","",450,404.0,180,0,0],["aiguillage_f","D",396,404.0,180,0,0],["droit_court","",253.16,404.0,180,0,0],["aiguillage_lev_f","D",145.16,404.0,180,0,0],["droit_long","",2.33,404.0,180,0,0],["droit_long","",-213.67,404.0,180,0,0],["courbe","D",-429.67,404.0,180,0,0],["courbe","D",-572.51,344.84,225,0,0],["courbe","D",-631.67,202.0,270,0,0],["courbe","D",-572.51,59.16,315,0,0],["rampe","up",-429.67,-0.0,0,0,0],["pont_bascule","",-213.67,-0.0,0,1,0],["courbe","D",253.16,344.84,225,0,0],["droit_long","",194,202.0,270,0,0],["droit_long","",194.0,-14.0,270,0,0],["courbe","D",2.33,344.84,225,0,0],["droit_moyen","",-56.84,202.0,270,0,0],["droit_moyen","",-56.84,58.0,270,0,0],["droit_moyen","",-56.84,-86.0,270,0,0]],[["gare","",0,0,0,1,0],["pont","",144,0,0,1,0],["droit_mini_ff","",288,0,0,1,0],["rampe","down",558,-0.0,180,0,1],["courbe","D",558,-0.0,0,0,0],["courbe","D",700.84,59.16,45,0,0],["courbe","D",760,202.0,90,0,0],["courbe","D",700.84,344.84,135,0,0],["droit_court","",558,404.0,180,0,0],["droit_mini_mm","",450,404.0,180,0,0],["aiguillage_lev_f","D",396,404.0,180,0,0],["droit_court","",253.16,404.0,180,0,0],["aiguillage_f","D",145.16,404.0,180,0,0],["droit_long","",2.33,404.0,180,0,0],["droit_long","",-213.67,404.0,180,0,0],["courbe","D",-429.67,404.0,180,0,0],["courbe","D",-572.51,344.84,225,0,0],["courbe","D",-631.67,202.0,270,0,0],["courbe","D",-572.51,59.16,315,0,0],["rampe","up",-429.67,-0.0,0,0,0],["pont_bascule","",-213.67,-0.0,0,1,0],["courbe","D",253.16,344.84,225,0,0],["droit_long","",194,202.0,270,0,0],["droit_long","",194.0,-14.0,270,0,0],["courbe","D",2.33,344.84,225,0,0],["droit_moyen","",-56.84,202.0,270,0,0],["droit_moyen","",-56.84,58.0,270,0,0],["droit_moyen","",-56.84,-86.0,270,0,0]],[["gare","",0,0,0,1,0],["pont","",144,0,0,1,0],["droit_mini_ff","",288,0,0,1,0],["rampe","down",558,-0.0,180,0,1],["courbe","D",558,-0.0,0,0,0],["courbe","D",700.84,59.16,45,0,0],["courbe","D",760,202.0,90,0,0],["courbe","D",700.84,344.84,135,0,0],["droit_court","",558,404.0,180,0,0],["droit_mini_mm","",450,404.0,180,0,0],["aiguillage_f","D",396,404.0,180,0,0],["droit_court","",253.16,404.0,180,0,0],["aiguillage_lev_f","D",145.16,404.0,180,0,0],["droit_long","",2.33,404.0,180,0,0],["droit_long","",-213.67,404.0,180,0,0],["courbe","D",-429.67,404.0,180,0,0],["courbe","D",-572.51,344.84,225,0,0],["courbe","D",-631.67,202.0,270,0,0],["courbe","D",-572.51,59.16,315,0,0],["rampe","up",-429.67,-0.0,0,0,0],["pont_bascule","",-213.67,-0.0,0,1,0],["courbe","D",253.16,344.84,225,0,0],["droit_long","",194,202.0,270,0,0],["droit_long","",194.0,-14.0,270,0,0],["courbe","D",2.33,344.84,225,0,0],["droit_moyen","",-56.84,202.0,270,0,0],["droit_moyen","",-56.84,58.0,270,0,0],["droit_court","",-56.84,-86.0,270,0,0]]];
+  const row = document.querySelector('#gen .gchecks');
+  if (!row || typeof GEN === 'undefined') return;
+  const btn = document.createElement('button'); btn.type = 'button'; btn.dataset.k = 'g3'; btn.setAttribute('aria-pressed', 'false'); btn.textContent = 'Gare à trois voies';
+  btn.onclick = () => { GEN.g3 = GEN.g3 ? 0 : 1; btn.setAttribute('aria-pressed', GEN.g3 ? 'true' : 'false'); };
+  row.appendChild(btn);
+  const origRun = window.runGen, origKeep = window.keepGenerated;
+  window.runGen = function () {
+    if (!GEN.g3) return origRun.apply(this, arguments);
+    const list = [], why = [];
+    T.forEach((a, k) => {
+      const pieces = a.map((q, i) => ({ id: 'g' + k + '_' + i, t: q[0], vk: q[1], x: q[2], y: q[3], rot: q[4], l0: q[5], e: q[6] }));
+      const used = countUsed(pieces, []), miss = Object.keys(used).filter(t => used[t] > invOf(t));
+      if (miss.length) miss.forEach(t => why.push(typeName(t))); else list.push({ pieces, bridges: 2, station: true, g3: true });
+    });
+    GENRES = list;
+    if (!list.length) { document.querySelector('#g-res').innerHTML = ''; document.querySelector('#g-msg').textContent = 'Pas assez de pièces pour la gare à trois voies. Il faut : gare, pont, pont bascule, 2 rampes, 10 courbes, 2 aiguillages, des rails droits et un relief (manque : ' + [...new Set(why)].join(', ') + ').'; return; }
+    document.querySelector('#g-res').innerHTML = list.map((r, i) => `<button class="gcard" data-gi="${i}">${miniSVG(r.pieces)}<span>${r.pieces.length} pièces · gare à 3 voies</span></button>`).join('');
+    document.querySelector('#g-msg').textContent = 'Le train du quai 1 passe sur la gare, ceux des quais 2 et 3 partent au sol, sous les ponts. Touchez une proposition pour la garder.';
   };
-  box.appendChild(b);
+  window.keepGenerated = function (i) {
+    const r = GENRES[i]; origKeep.apply(this, arguments);
+    if (r && r.g3) { cur().name = 'Gare à 3 voies ' + ST.circuits.length; const n = document.querySelector('#cname'); if (n) n.value = cur().name; changed(); }
+  };
 })();
 
 /* ---------- Vue 3D (fichier séparé) ---------- */
