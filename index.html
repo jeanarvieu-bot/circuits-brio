@@ -562,7 +562,7 @@ function trackSVG(p, opts = {}) {
   const lv = def.bridge ? def.need : (def.ramp ? 'r' : Math.round(p.l0));
   let g = '';
   if (def.bridge === 'bascule') g += `<rect x="-6" y="-34" width="${def.len + 12}" height="68" rx="10" class="water"/>`;
-  if (def.station) g += `<rect x="-14" y="-74" width="172" height="124" rx="8" class="st-base"/><rect x="0" y="-66" width="144" height="40" rx="3" class="st-plat"/><text x="12" y="-36" class="st-num">1</text>`;
+  if (def.station) g += `<rect x="-26" y="-74" width="196" height="124" rx="8" class="st-base"/><rect x="0" y="-66" width="144" height="40" rx="3" class="st-plat"/><rect x="-24" y="-66" width="22" height="108" rx="3" class="st-plat"/><rect x="146" y="-66" width="22" height="108" rx="3" class="st-plat"/><text x="12" y="-36" class="st-num">1</text>`;
   if (!def.ramp && !def.bridge && Math.round(p.l0) >= 1) g += `<path d="${axis}" class="relief-edge" stroke-width="80"/><path d="${axis}" class="relief-rock" stroke-width="72"/>`;
   g += `<path d="${axis}" class="rail-edge" stroke-width="${TRACK_W + 5}"/><path d="${axis}" class="${def.tunnel ? 'rail-blue' : 'rail-wood'}" stroke-width="${TRACK_W}"/>`;
   g += grooves.map(d => `<path d="${d}" class="rail-groove"/>`).join('');
