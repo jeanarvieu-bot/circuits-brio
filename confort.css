@@ -72,3 +72,13 @@ html,body{overscroll-behavior:none}
 #keys table{width:100%;border-collapse:collapse;font-size:14px}
 #keys td{padding:6px 4px;border-bottom:1px solid var(--line)}
 #keys td:first-child{white-space:nowrap;width:44%}
+
+/* ---------- Vue 3D ---------- */
+#v3d{font-weight:800;letter-spacing:.02em}
+#v3d[aria-pressed="true"]{background:var(--ink);color:var(--panel);border-color:transparent}
+#v3d-cv{position:absolute;inset:0;z-index:1;touch-action:none;cursor:grab}
+#v3d-cv:active{cursor:grabbing}
+#v3d-cv[hidden],#v3d-hint[hidden]{display:none}
+#v3d-hint{position:absolute;left:12px;top:12px;z-index:2;max-width:min(320px,55%);color:var(--muted);font-size:12px;font-weight:700;pointer-events:none;text-shadow:0 1px 0 var(--panel)}
+@media (max-width:600px){#v3d-hint{display:none}}
+#stage.is3d #note{display:none}
