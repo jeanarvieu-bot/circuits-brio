@@ -136,14 +136,14 @@
     }
     if (def.station) {
       /* la gare repose sur le sol (dalle). Le quai 1 et le rail intégré sont portés en hauteur par un socle de relief
-         intégré ; le quai 2 est au niveau de la dalle, le long duquel des rails au sol peuvent passer */
+         intégré ; les quais 2 et 3, aux deux extrémités, sont au niveau de la dalle (rails au sol possibles le long) */
       const zs = Math.max(z0, 14);
-      box(tf, -14, -74, 158, 50, 0, 4, pal.base, pal.base, { bias: 120 });
+      box(tf, -26, -74, 170, 50, 0, 4, pal.base, pal.base, { bias: 120 });
       box(tf, 0, -70, 144, 24, 4, zs, mix(pal.rock, [0, 0, 0], 0.1), mix(pal.rock, [255, 255, 255], 0.12), { bias: 80 });
       box(tf, 0, -68, 144, -28, zs, zs + 6, mix(pal.plat, [0, 0, 0], 0.2), pal.plat, { bias: 60 });
       box(tf, 0, -31, 144, -28, zs, zs + 7, [255, 255, 255], [255, 255, 255], { edge: 0, bias: 55 });
-      box(tf, 0, 28, 144, 48, 4, 12, mix(pal.plat, [0, 0, 0], 0.2), pal.plat, { bias: 40 });
-      box(tf, 0, 28, 144, 31, 4, 13, [255, 255, 255], [255, 255, 255], { edge: 0, bias: 35 });
+      box(tf, -24, -70, 0, 46, 4, 12, mix(pal.plat, [0, 0, 0], 0.2), pal.plat, { bias: 40 });
+      box(tf, 144, -70, 168, 46, 4, 12, mix(pal.plat, [0, 0, 0], 0.2), pal.plat, { bias: 40 });
       [[6, -50], [138, -50]].forEach(([x, y]) => box(tf, x - 4, y - 4, x + 4, y + 4, zs + 6, zs + 70, pal.post, pal.post));
       box(tf, -18, -74, 162, -28, zs + 70, zs + 80, mix(pal.green, [0, 0, 0], 0.2), pal.green, { bias: 70 });
       railOn(paths, z0 ? 0 : 8);
