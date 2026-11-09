@@ -281,7 +281,7 @@ const TRACKS = {
                   variants: [{ k: 'up', m: 1, e: 0, label: 'Monter' }, { k: 'down', m: 1, e: 1, label: 'Descendre' }] },
   pont:         { cat: 'ponts', name: 'Pont',         dim: '≈ 14 cm', len: 144, need: 1, bridge: 'simple', ports: straight(144) },
   double_pont:  { cat: 'ponts', name: 'Double pont',  dim: '≈ 33 cm', len: 324, need: 1, bridge: 'double', ports: straight(324) },
-  gare:         { cat: 'decors', name: 'Gare',         dim: 'rail inclus, 14,4 cm', len: 144, need: 0, station: true, ports: straight(144) },
+  gare:         { cat: 'decors', name: 'Gare',         dim: 'rail inclus en hauteur, 14,4 cm', len: 144, need: 1, station: true, ports: straight(144) },
   commissariat: { cat: 'decors', name: 'Commissariat', dim: 'rail inclus, 14,4 cm', len: 144, need: 0, police: true, ports: straight(144) },
   tunnel:       { cat: 'decors', name: 'Tunnel',       dim: 'rail inclus, 21,6 cm', len: 216, tunnel: true, ports: straight(216) },
   pont_bascule: { cat: 'ponts', name: 'Pont bascule', dim: '≈ 21 cm', len: 216, need: 1, bridge: 'bascule', ports: straight(216) },
@@ -410,7 +410,7 @@ function bounds(pieces, decors) {
   if (x0 > x1) return { x0: -400, y0: -300, x1: 400, y1: 300 };
   return { x0, y0, x1, y1 };
 }
-const isElevatedRail = p => { const d = TRACKS[p.t]; return !d.ramp && !d.bridge && Math.round(p.l0) >= 1; };
+const isElevatedRail = p => { const d = TRACKS[p.t]; return !d.ramp && !d.bridge && !d.station && Math.round(p.l0) >= 1; };
 const countUsed = (pieces, decors) => { const u = {}; pieces.forEach(p => { u[p.t] = (u[p.t] || 0) + 1; if (isElevatedRail(p)) u.relief = (u.relief || 0) + 1; }); decors.forEach(d => u[d.t] = (u[d.t] || 0) + 1); return u; };
 const uid = () => Math.random().toString(36).slice(2, 9);
 
@@ -456,20 +456,24 @@ function tryGenerate(o, A) {
   // viaduc : rampe, pont(s), femelle-femelle, rampe. Il impose un mâle-mâle ailleurs sur la boucle (changement de polarité).
   let macro = null, macroRun = -1, partner = -1;
   const nb = o.viaduc || 0;
-  if (nb) {
-    const types = shuffle(Object.keys(BRIDGE_U).filter(t => A(t) > 0)).slice(0, nb);
+  // la gare est surélevée (quai intégré) : elle se pose en haut d'une rampe, dans le viaduc
+  const wantStation = !!(o.gare && A('gare') > 0 && A('rampe') >= 2 && A('droit_mini_ff') >= 1 && A('droit_mini_mm') >= 1);
+  if (nb || wantStation) {
+    const pool = []; Object.keys(BRIDGE_U).forEach(t => { for (let k = 0; k < A(t); k++) pool.push(t); });
+    const types = shuffle(pool).slice(0, nb), items = types.slice(); if (wantStation) items.push('gare'); shuffle(items);
     if (types.length < nb || A('rampe') < 2 || A('droit_mini_ff') < 1 || A('droit_mini_mm') < 1 || A('relief') < nb) return null;
-    if (nb > 1) { if (left.droit_court < 1) return null; left.droit_court--; }
+    if (items.length > 1) { if (left.droit_court < items.length - 1) return null; left.droit_court -= items.length - 1; }
     macro = [{ t: 'rampe', vk: 'up' }]; let u = 24 + 3;
-    types.forEach((t, k) => { if (k) macro.push({ t: 'droit_court', vk: '' }), u += 6; macro.push({ t, vk: '' }); u += BRIDGE_U[t]; });
+    items.forEach((t, k) => { if (k) macro.push({ t: 'droit_court', vk: '' }), u += 6; macro.push({ t, vk: '' }); u += t === 'gare' ? 8 : BRIDGE_U[t]; });
     macro.push({ t: 'droit_mini_ff', vk: '' }, { t: 'rampe', vk: 'down' });
-    const j = rnd(m), extra = 2 * rnd(6); r[j] = u + extra;
-    runs.forEach(q => { if (q.i === j) q.units = q.free = r[j]; });
+    const big = nb + (wantStation ? 1 : 0) >= 3, j = rnd(m), extra = big ? [0, 0, 6, 8][rnd(4)] : 2 * rnd(6); r[j] = u + extra;
+    if (big) for (let i = 0; i < m; i++) if (i !== j) r[i] = 0;   // beaucoup de ponts : le reste de la boucle reste court
+    runs.forEach(q => { if (q.i === j || big) q.units = q.free = r[q.i]; });
     const mine = runs.filter(q => q.i === j); macroRun = rnd(2); const A1 = mine[macroRun], B1 = mine[1 - macroRun];
     A1.free -= u; A1.items.push({ macro: true }); B1.free -= 3; B1.items.push({ t: 'droit_mini_mm', vk: '' });
     if (A1.free < 0 || B1.free < 0) return null;
   }
-  const specials = []; if (o.tunnel && A('tunnel') > 0) specials.push(['tunnel', 12]); if (o.gare && A('gare') > 0) specials.push(['gare', 8]); if (o.commissariat && A('commissariat') > 0) specials.push(['commissariat', 8]);
+  const specials = []; if (o.tunnel && A('tunnel') > 0) specials.push(['tunnel', 12]); if (o.commissariat && A('commissariat') > 0) specials.push(['commissariat', 8]);
   for (const [t, u] of specials) { const ok = runs.filter(q => q.free >= u); if (!ok.length) return null; const q = ok[rnd(ok.length)]; q.free -= u; q.items.push({ t, vk: '' }); }
   for (const q of runs.slice().sort((a, b) => b.free - a.free)) { if (q.free % 2) return null; const tl = tileRun(q.free, left, { n: 4000 }); if (!tl) return null; tl.forEach(t => q.items.push({ t, vk: '' })); shuffle(q.items); }
   // construction
@@ -481,7 +485,7 @@ function tryGenerate(o, A) {
   }
   const an = analyse(pieces); if (!an.closed || collisions(pieces, an).length) return null;
   const used = countUsed(pieces, []); for (const t in used) if (used[t] > A(t)) return null;
-  return { pieces, curves: 2 * m, bridges: nb };
+  return { pieces, curves: 2 * m, bridges: nb, station: wantStation };
 }
 /* Plusieurs propositions différentes ; en mode « tout l'inventaire », les plus fournies d'abord */
 function generateMany(o, A, n) {
@@ -509,7 +513,7 @@ function tryTheta(o, A) {
   const left = {}; FILL.forEach(([t]) => left[t] = A(t));
   // pièces spéciales (rails avec décor) : tirées pour occuper des alignements de la boucle
   const slots = [{ n: 'rt', u: rt }, { n: 'rt2', u: rt2 }, { n: 'rtB', u: rtB }, { n: 'rv', u: rv }];
-  const items = []; const sp = []; if (o.tunnel && A('tunnel') > 0) sp.push(['tunnel', 12]); if (o.gare && A('gare') > 0) sp.push(['gare', 8]); if (o.commissariat && A('commissariat') > 0) sp.push(['commissariat', 8]);
+  const items = []; const sp = []; if (o.tunnel && A('tunnel') > 0) sp.push(['tunnel', 12]); if (o.commissariat && A('commissariat') > 0) sp.push(['commissariat', 8]);
   // les segments : haut/bas x (rt, rt2, rtB), verticaux A (2) et liaisons (nd)
   const segs = []; const mk = (name, u) => { const q = { name, units: u, free: u, items: [] }; segs.push(q); return q; };
   const topA = mk('topA', rt), topB = nd === 2 ? mk('topB', rtB) : null, top2 = mk('top2', rt2), botA = mk('botA', rt), botB = nd === 2 ? mk('botB', rtB) : null, bot2 = mk('bot2', rt2);
