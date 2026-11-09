@@ -128,6 +128,22 @@
   }
 })();
 
+/* ---------- Circuit d'exemple : gare à 3 quais ---------- */
+(function () {
+  'use strict';
+  const D = [["gare","",0,0,0,1,0],["droit_mini_ff","",144,0,0,1,0],["rampe","down",414,-0.0,180,0,1],["courbe","D",414,-0.0,0,0,0],["courbe","D",556.84,59.16,45,0,0],["courbe","D",616,202.0,90,0,0],["courbe","D",556.84,344.84,135,0,0],["aiguillage_m","D",414,404.0,180,0,0],["droit_moyen","",271.16,404.0,180,0,0],["aiguillage_lev_m","D",127.16,404.0,180,0,0],["droit_court","",-15.67,404.0,180,0,0],["droit_mini_mm","",-123.67,404.0,180,0,0],["droit_moyen","",-177.67,404.0,180,0,0],["courbe","D",-321.67,404.0,180,0,0],["courbe","D",-464.51,344.84,225,0,0],["courbe","D",-523.67,202.0,270,0,0],["courbe","D",-464.51,59.16,315,0,0],["rampe","up",-321.67,-0.0,0,0,0],["droit_court","",-105.67,-0.0,0,1,0],["courbe","D",271.16,344.84,225,0,0],["droit_long","",212.0,202.0,270,0,0],["droit_court","",212.0,-14.0,270,0,0],["courbe","D",-15.67,344.84,225,0,0],["droit_long","",-74.84,202.0,270,0,0],["droit_court","",-74.84,-14.0,270,0,0]];
+  const box = document.querySelector('#gen .gbox');
+  if (!box || typeof ST === 'undefined') return;
+  const b = document.createElement('button'); b.className = 'btn'; b.type = 'button';
+  b.textContent = 'Exemple : gare à 3 quais'; b.style.margin = '8px 0 0';
+  b.onclick = () => {
+    const pieces = D.map((a, i) => ({ id: 'q' + i + '_' + Date.now().toString(36), t: a[0], vk: a[1], x: a[2], y: a[3], rot: a[4], l0: a[5], e: a[6] }));
+    ST.circuits.push({ id: 'c' + Date.now().toString(36), name: 'Gare à 3 quais', pieces, decors: [], cursor: null });
+    ST.current = ST.circuits[ST.circuits.length - 1].id; HIST = []; SEL = null; changed(); fitView(); document.querySelector('#gen').hidden = true;
+  };
+  box.appendChild(b);
+})();
+
 /* ---------- Vue 3D (fichier séparé) ---------- */
 (function () {
   const s = document.createElement('script'); s.src = 'vue3d.js'; document.body.appendChild(s);
